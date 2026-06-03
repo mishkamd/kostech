@@ -1,0 +1,5 @@
+<template>
+  <div class="bento-grid">
+    <slot />
+  </div>
+</template>

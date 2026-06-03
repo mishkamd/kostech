@@ -1,0 +1,21 @@
+name = "kostech-web"
+compatibility_date = "2025-05-01"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "dist"
+
+[vars]
+SITE_URL = "https://kostech.md"
+
+# Uncomment after running scripts/cf-bootstrap.sh to populate IDs:
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "kostech-web"
+# database_id = "REPLACE_ME"
+
+# [[kv_namespaces]]
+# binding = "CACHE"
+# id = "REPLACE_ME"
+
+# [[r2_buckets]]
+# binding = "MEDIA"
+# bucket_name = "kostech-web-media"
