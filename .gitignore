@@ -8,3 +8,13 @@ dist
 .env
 .env.*
 !.env.example
+
+# Agent / IDE / editor local state (per-user, not for version control)
+.agents/
+.copilot/
+.offline-markdown-preview/
+
+# GitHub Copilot instruction/skill scaffolding (kept under workflows/ for CI)
+.github/instructions/
+.github/skills/
+.github/skills-lock.json
