@@ -32,8 +32,12 @@ jobs:
       - run: pnpm --filter @kostech/web build
         env:
           NUXT_PUBLIC_SITE_URL: https://kostech.md
-      - run: pnpm install -g wrangler
+          # wrangler is already in devDependencies - make sure it's on PATH
       - name: Deploy to Cloudflare Pages
-        run: npx wrangler pages deploy apps/web/dist --project-name=kostech-web --branch=main --account-id=${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          WRANGLER=$(pnpm exec which wrangler 2>/dev/null || which wrangler 2>/dev/null || echo "./node_modules/.bin/wrangler")
+          echo "Using wrangler at: $WRANGLER"
+          $WRANGLER pages deploy apps/web/dist --project-name=kostech-web --branch=main --account-id=${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          NODE_PATH: ./node_modules
