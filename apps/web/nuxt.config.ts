@@ -23,11 +23,7 @@ export default defineNuxtConfig({
     ],
     defaultLocale: 'ro',
     strategy: 'prefix_except_default',
-    detectBrowserLanguage: {
-      useCookie: true,
-      cookieKey: 'kostech-locale',
-      redirectOn: false,
-    },
+    detectBrowserLanguage: false,
   },
 
   colorMode: {
@@ -108,8 +104,10 @@ export default defineNuxtConfig({
   nitro: {
     // Override via NITRO_PRESET=node_server for Docker deployments
     preset: (process.env.NITRO_PRESET as string) || 'cloudflare_pages',
+    // Disable Nitro auto-deploy — we deploy manually via workflow
     commands: {
-      deploy: '', // Disable auto-deploy — we deploy manually via workflow
+      deploy: '',
+      preview: '',
     },
     // Production storage for non-Cloudflare deployments (Docker / bare metal).
     // On Cloudflare Pages the KV binding (event.context.cloudflare.env.CACHE)
@@ -139,6 +137,12 @@ export default defineNuxtConfig({
       ],
       crawlLinks: true,
     },
+  },
+
+  routeRules: {
+    '/admin/**': { prerender: false },
+    '/ru/admin/**': { prerender: false },
+    '/en/admin/**': { prerender: false },
   },
 
   typescript: {

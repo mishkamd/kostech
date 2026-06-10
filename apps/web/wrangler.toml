@@ -1,5 +1,5 @@
 name = "kostech-web"
-compatibility_date = "2025-05-01"
+compatibility_date = "2026-06-01"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "dist"
 
@@ -12,9 +12,9 @@ SITE_URL = "https://kostech.md"
 # database_name = "kostech-web"
 # database_id = "REPLACE_ME"
 
-# [[kv_namespaces]]
-# binding = "CACHE"
-# id = "REPLACE_ME"
+[[kv_namespaces]]
+binding = "CACHE"
+id = "8763361cb5bb4cd092ad882e5502a062"
 
 # [[r2_buckets]]
 # binding = "MEDIA"
