@@ -32,15 +32,6 @@ watch(() => route.path, () => { mobileMenuOpen.value = false })
       </nav>
 
       <div class="flex items-center gap-1.5 sm:gap-3">
-        <!-- Booking CTA (hidden on mobile) -->
-        <NuxtLink
-          :to="localePath('/booking')"
-          class="hidden sm:inline-flex items-center gap-1.5 min-h-9 px-4 text-sm rounded-xl font-semibold bg-primary text-white hover:bg-primary-hover transition shadow-sm"
-        >
-          <Icon name="fa6-solid:calendar-days" class="text-xs" />
-          {{ t('nav.booking') }}
-        </NuxtLink>
-
         <!-- Language switcher -->
         <div class="flex items-center gap-0.5 bg-slate-50 dark:bg-dark-bg rounded-full border border-slate-100 dark:border-dark-border p-0.5 sm:p-1">
           <NuxtLink
@@ -77,13 +68,6 @@ watch(() => route.path, () => { mobileMenuOpen.value = false })
       >
         <Icon name="fa6-solid:server" class="text-primary text-sm shrink-0" />
         {{ t('nav.services') }}
-      </NuxtLink>
-      <NuxtLink
-        :to="localePath('/booking')"
-        class="flex items-center gap-3 px-3 py-3 rounded-xl bg-primary/5 hover:bg-primary/10 transition text-sm font-semibold text-primary"
-      >
-        <Icon name="fa6-solid:calendar-days" class="text-sm shrink-0" />
-        {{ t('nav.booking') }}
       </NuxtLink>
     </div>
   </header>
