@@ -27,7 +27,7 @@ useSeoMeta({
 
 const localePath = useLocalePath()
 
-const DEFAULT_ORDER = ['hero', 'services', 'form', 'contact', 'location', 'stats']
+const DEFAULT_ORDER = ['hero', 'services', 'contact', 'location', 'form', 'stats']
 
 const defaultStats = [
   { value: '500+', label: 'Clienți mulțumiți' },
