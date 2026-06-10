@@ -29,11 +29,11 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @kostech/web build
+      - name: Build & Deploy to Cloudflare Pages
+        run: |
+          cd apps/web
+          pnpm build
+          pnpm exec wrangler pages deploy dist --project-name=kostech-web --branch=main --account-id=${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         env:
           NUXT_PUBLIC_SITE_URL: https://kostech.md
-          # wrangler is already in devDependencies - make sure it's on PATH
-      - name: Deploy to Cloudflare Pages
-        run: pnpm --filter @kostech/web exec wrangler pages deploy apps/web/dist --project-name=kostech-web --branch=main --account-id=${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
