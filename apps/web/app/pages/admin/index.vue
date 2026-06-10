@@ -39,11 +39,16 @@ const activity = computed(() => {
   return items.slice(0, 8)
 })
 
+type StatusKey = keyof typeof statusLabel
 const statusLabel: Record<string, { label: string; dot: string; bg: string }> = {
   new: { label: 'Nou', dot: 'bg-slate-400', bg: 'bg-slate-100 dark:bg-slate-800' },
   in_progress: { label: 'În lucru', dot: 'bg-amber-400', bg: 'bg-amber-100 dark:bg-amber-900/20' },
   done: { label: 'Finalizat', dot: 'bg-emerald-400', bg: 'bg-emerald-100 dark:bg-emerald-900/20' },
   canceled: { label: 'Anulat', dot: 'bg-red-400', bg: 'bg-red-100 dark:bg-red-900/20' },
+}
+
+function sl(key: string) {
+  return statusLabel[key]!
 }
 
 function timeAgo(ts: number) {
@@ -83,7 +88,7 @@ const kpis = computed(() => [
   },
 ])
 
-const statusKeys = ['new', 'in_progress', 'done', 'canceled'] as const
+const statusKeys: StatusKey[] = ['new', 'in_progress', 'done', 'canceled']
 </script>
 
 <template>
@@ -139,8 +144,8 @@ const statusKeys = ['new', 'in_progress', 'done', 'canceled'] as const
           <div v-for="key in statusKeys" :key="'l-'+key" class="space-y-1.5">
             <div class="flex items-center justify-between text-xs">
               <div class="flex items-center gap-1.5">
-                <span :class="['w-2 h-2 rounded-full', statusLabel[key].dot]" />
-                <span class="font-medium text-slate-700 dark:text-slate-300">{{ statusLabel[key].label }}</span>
+                <span :class="['w-2 h-2 rounded-full', sl(key).dot]" />
+                <span class="font-medium text-slate-700 dark:text-slate-300">{{ sl(key).label }}</span>
               </div>
               <span class="font-bold text-slate-900 dark:text-white">
                 {{ (stats.leadsByStatus as any)[key] }}
@@ -168,8 +173,8 @@ const statusKeys = ['new', 'in_progress', 'done', 'canceled'] as const
           <div v-for="key in statusKeys" :key="'b-'+key" class="space-y-1.5">
             <div class="flex items-center justify-between text-xs">
               <div class="flex items-center gap-1.5">
-                <span :class="['w-2 h-2 rounded-full', statusLabel[key].dot]" />
-                <span class="font-medium text-slate-700 dark:text-slate-300">{{ statusLabel[key].label }}</span>
+                <span :class="['w-2 h-2 rounded-full', sl(key).dot]" />
+                <span class="font-medium text-slate-700 dark:text-slate-300">{{ sl(key).label }}</span>
               </div>
               <span class="font-bold text-slate-900 dark:text-white">
                 {{ (stats.bookingsByStatus as any)[key] }}
