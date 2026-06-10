@@ -27,7 +27,14 @@ useSeoMeta({
 
 const localePath = useLocalePath()
 
-const DEFAULT_ORDER = ['hero', 'services', 'form', 'contact', 'location']
+const DEFAULT_ORDER = ['hero', 'services', 'form', 'contact', 'location', 'stats']
+
+const defaultStats = [
+  { value: '500+', label: 'Clienți mulțumiți' },
+  { value: '8 ani', label: 'Experiență' },
+  { value: '1h', label: 'Răspuns mediu' },
+  { value: '24/7', label: 'Suport critic' },
+]
 const orderedSections = computed(() =>
   content.value?.layoutOrder?.length ? [...content.value.layoutOrder] : DEFAULT_ORDER
 )
@@ -200,7 +207,7 @@ const submit = async () => {
     </BentoCard>
 
     <!-- Form -->
-    <BentoCard v-else-if="key === 'form'" class="lg:row-span-2 lg:min-h-[460px] flex flex-col">
+    <BentoCard v-else-if="key === 'form'" class="lg:min-h-[460px] flex flex-col">
       <h3 class="text-[11px] font-bold text-primary uppercase tracking-wider mb-4 sm:mb-5 flex items-center justify-between w-full">
         <span>{{ content?.form?.title ?? 'Solicită o comandă' }}</span>
         <Icon name="fa6-solid:file-signature" class="text-lg" />
@@ -316,6 +323,23 @@ const submit = async () => {
             <a href="https://t.me/kostech" class="font-semibold text-slate-900 dark:text-white">@kostech</a>
           </li>
         </ul>
+    </BentoCard>
+
+    <!-- Stats -->
+    <BentoCard v-else-if="key === 'stats'" class="h-full flex flex-col">
+      <h3 class="text-[11px] font-bold text-primary uppercase tracking-wider mb-4">
+        {{ content?.stats?.title ?? 'Cifre' }}
+      </h3>
+      <div class="grid grid-cols-2 gap-x-4 gap-y-5 flex-1">
+        <div v-for="item in (content?.stats?.items ?? defaultStats)" :key="item.label">
+          <div class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white leading-none">
+            {{ item.value }}
+          </div>
+          <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-tight">
+            {{ item.label }}
+          </div>
+        </div>
+      </div>
     </BentoCard>
     </template>
   </BentoGrid>
