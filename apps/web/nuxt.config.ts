@@ -108,6 +108,9 @@ export default defineNuxtConfig({
   nitro: {
     // Override via NITRO_PRESET=node_server for Docker deployments
     preset: (process.env.NITRO_PRESET as string) || 'cloudflare_pages',
+    commands: {
+      deploy: '', // Disable auto-deploy — we deploy manually via workflow
+    },
     // Production storage for non-Cloudflare deployments (Docker / bare metal).
     // On Cloudflare Pages the KV binding (event.context.cloudflare.env.CACHE)
     // is used directly by server/utils/storage.ts — this mount is only hit when
