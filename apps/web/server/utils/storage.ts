@@ -2,14 +2,14 @@ import type { H3Event } from 'h3'
 
 type Json = Record<string, unknown>
 
-// In-memory fallback for local dev (no wrangler needed).
-const memory = new Map<string, string>()
-
 function getKV(event: H3Event): KVNamespace | null {
   const env = (event.context as { cloudflare?: { env?: { CACHE?: KVNamespace } } })?.cloudflare?.env
   if (env?.CACHE) return env.CACHE
   return null
 }
+
+// Dev fallback: Nitro filesystem-backed storage (configured via nitro.devStorage)
+const store = () => useStorage('cache')
 
 export async function kvList(event: H3Event, prefix: string): Promise<Json[]> {
   const kv = getKV(event)
@@ -23,9 +23,9 @@ export async function kvList(event: H3Event, prefix: string): Promise<Json[]> {
     )
     return items.filter(Boolean) as Json[]
   }
-  return Array.from(memory.entries())
-    .filter(([k]) => k.startsWith(prefix))
-    .map(([, v]) => JSON.parse(v) as Json)
+  const keys = await store().getKeys(prefix)
+  const items = await Promise.all(keys.map(k => store().getItem<Json>(k)))
+  return items.filter(Boolean) as Json[]
 }
 
 export async function kvPut(event: H3Event, key: string, value: Json): Promise<void> {
@@ -34,14 +34,13 @@ export async function kvPut(event: H3Event, key: string, value: Json): Promise<v
     await kv.put(key, JSON.stringify(value))
     return
   }
-  memory.set(key, JSON.stringify(value))
+  await store().setItem(key, value)
 }
 
 export async function kvGet(event: H3Event, key: string): Promise<Json | null> {
   const kv = getKV(event)
   if (kv) return ((await kv.get(key, 'json')) as Json) ?? null
-  const v = memory.get(key)
-  return v ? (JSON.parse(v) as Json) : null
+  return await store().getItem<Json>(key)
 }
 
 export async function kvDelete(event: H3Event, key: string): Promise<void> {
@@ -50,7 +49,7 @@ export async function kvDelete(event: H3Event, key: string): Promise<void> {
     await kv.delete(key)
     return
   }
-  memory.delete(key)
+  await store().removeItem(key)
 }
 
 export function newId(prefix: string): string {

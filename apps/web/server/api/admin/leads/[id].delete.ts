@@ -2,7 +2,7 @@ import { requireAdmin } from '~~/server/utils/auth'
 import { kvGet, kvDelete } from '~~/server/utils/storage'
 
 export default defineEventHandler(async (event) => {
-  requireAdmin(event)
+  await requireAdmin(event)
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400, statusMessage: 'ID lipsă' })
   const current = await kvGet(event, `lead:${id}`)

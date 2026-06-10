@@ -49,10 +49,20 @@ export const StatusSchema = z.object({
   status: z.enum(['new', 'in_progress', 'done', 'canceled']),
 })
 
+export const BookingUpdateSchema = z.object({
+  status: z.enum(['new', 'in_progress', 'done', 'canceled']).optional(),
+  name: z.string().min(2).max(120).optional(),
+  phone: z.string().min(5).max(40).optional().or(z.literal('')),
+  date: z.string().min(8).max(20).optional(),
+  address: z.string().max(300).optional().or(z.literal('')),
+  notes: z.string().max(2000).optional().or(z.literal('')),
+})
+
 export const LeadUpdateSchema = z.object({
   status: z.enum(['new', 'in_progress', 'done', 'canceled']).optional(),
   name: z.string().min(2).max(120).optional(),
   email: z.string().email().max(160).optional().or(z.literal('')),
   phone: z.string().min(5).max(40).optional().or(z.literal('')),
   message: z.string().max(2000).optional().or(z.literal('')),
+  location: z.string().max(200).optional().or(z.literal('')),
 })

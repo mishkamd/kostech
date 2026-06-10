@@ -24,7 +24,7 @@ function kindIcon(kind?: string) {
 
 <template>
   <Teleport to="body">
-    <div class="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 max-w-sm w-[calc(100vw-2rem)] sm:w-96 pointer-events-none">
+    <div class="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 max-w-sm w-[calc(100vw-2rem)] sm:w-96 pointer-events-none" role="alert" aria-live="polite">
       <TransitionGroup name="toast">
         <div
           v-for="t in messages"

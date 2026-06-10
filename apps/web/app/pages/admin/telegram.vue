@@ -8,6 +8,7 @@ interface SettingsShape {
     chatId: string
     enabled: boolean
     configured: boolean
+    webhookActive: boolean
   }
   notifications: {
     leadCreated: boolean
@@ -32,6 +33,59 @@ const errorMsg = ref('')
 const testMessage = ref('')
 const testing = ref(false)
 const testResult = ref<{ ok: boolean; description?: string } | null>(null)
+
+// Webhook
+const webhookSetupMsg = ref('')
+const webhookError = ref('')
+const webhookWorking = ref(false)
+const webhookInfo = ref<{ url?: string; pending_update_count?: number; last_error_message?: string } | null>(null)
+
+async function fetchWebhookInfo() {
+  if (!settings.value?.telegram.configured) return
+  try {
+    const res = await $fetch<{ ok: boolean; info: any; webhookActive: boolean }>('/api/admin/telegram/webhook-setup', {
+      method: 'POST',
+      body: { action: 'info' },
+    })
+    webhookInfo.value = res.info
+  } catch { /* ignore */ }
+}
+
+async function setupWebhook() {
+  webhookSetupMsg.value = ''
+  webhookError.value = ''
+  webhookWorking.value = true
+  try {
+    const res = await $fetch<{ ok: boolean; webhookUrl: string }>('/api/admin/telegram/webhook-setup', {
+      method: 'POST',
+      body: { action: 'setup' },
+    })
+    webhookSetupMsg.value = `Webhook activ: ${res.webhookUrl}`
+    await load()
+    await fetchWebhookInfo()
+  } catch (e: any) {
+    webhookError.value = e?.data?.statusMessage || 'Eroare la configurare'
+  } finally {
+    webhookWorking.value = false
+  }
+}
+
+async function removeWebhook() {
+  if (!confirm('Elimini webhook-ul Telegram? Botul nu va mai răspunde la comenzi.')) return
+  webhookSetupMsg.value = ''
+  webhookError.value = ''
+  webhookWorking.value = true
+  try {
+    await $fetch('/api/admin/telegram/webhook-setup', { method: 'POST', body: { action: 'delete' } })
+    webhookSetupMsg.value = 'Webhook eliminat.'
+    webhookInfo.value = null
+    await load()
+  } catch (e: any) {
+    webhookError.value = e?.data?.statusMessage || 'Eroare'
+  } finally {
+    webhookWorking.value = false
+  }
+}
 
 async function load() {
   loading.value = true
@@ -129,6 +183,7 @@ const configStatus = computed(() => {
 })
 
 await load()
+await fetchWebhookInfo()
 </script>
 
 <template>
@@ -143,7 +198,7 @@ await load()
           <div>
             <h1 class="text-xl font-bold text-slate-900 dark:text-white">Notificări Telegram</h1>
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Primește alerte pe Telegram pentru lead-uri noi, programări și schimbări de status.
+              Primește alerte pe Telegram pentru comenzi noi, programări și schimbări de status.
             </p>
           </div>
         </div>
@@ -262,6 +317,87 @@ await load()
             <p class="font-semibold">{{ testResult.ok ? 'Mesaj trimis cu succes!' : 'Trimiterea a eșuat' }}</p>
             <p v-if="testResult.description" class="opacity-80 mt-0.5">{{ testResult.description }}</p>
           </div>
+        </div>
+      </BentoCard>
+
+      <!-- Webhook + Bot interactiv -->
+      <BentoCard class="mb-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-[11px] font-bold text-primary uppercase tracking-wider">Bot interactiv (webhook)</h2>
+          <span
+            class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+            :class="settings?.telegram.webhookActive
+              ? 'bg-green-500/10 text-green-700 dark:text-green-400'
+              : 'bg-slate-100 text-slate-500 dark:bg-dark-bg dark:text-slate-400'"
+          >
+            {{ settings?.telegram.webhookActive ? 'Activ' : 'Inactiv' }}
+          </span>
+        </div>
+
+        <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">
+          Activează webhook-ul pentru ca botul să răspundă la comenzi interactive: cereri, programări, statistici și acces la panoul admin din Telegram.
+        </p>
+
+        <!-- Current webhook info -->
+        <div v-if="webhookInfo?.url" class="mb-4 p-3 rounded-xl bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border text-xs font-mono break-all text-slate-600 dark:text-slate-300">
+          <p class="font-semibold text-slate-800 dark:text-white mb-1">URL activ:</p>
+          <p>{{ webhookInfo.url }}</p>
+          <p v-if="webhookInfo.last_error_message" class="text-red-500 mt-1">⚠️ {{ webhookInfo.last_error_message }}</p>
+        </div>
+
+        <!-- Commands reference -->
+        <div class="mb-4 p-3 rounded-xl bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border text-xs text-slate-600 dark:text-slate-300 space-y-1">
+          <p class="font-semibold text-slate-800 dark:text-white mb-2">Comenzi disponibile:</p>
+          <p><code class="text-primary">/start</code> — Meniu principal cu butoane</p>
+          <p><code class="text-primary">/cereri</code> — Ultimele 5 cereri</p>
+          <p><code class="text-primary">/programari</code> — Ultimele 5 programări</p>
+          <p><code class="text-primary">/statistici</code> — Statistici generale</p>
+          <p><code class="text-primary">/ajutor</code> — Lista comenzilor</p>
+        </div>
+
+        <p v-if="webhookSetupMsg" class="text-xs text-green-600 dark:text-green-400 mb-3">
+          <Icon name="fa6-solid:check" class="mr-1" />{{ webhookSetupMsg }}
+        </p>
+        <p v-if="webhookError" class="text-xs text-red-500 mb-3">{{ webhookError }}</p>
+
+        <div class="flex gap-2">
+          <button
+            type="button"
+            class="text-xs px-5 py-2.5 rounded-xl bg-primary text-white font-semibold hover:opacity-90 transition disabled:opacity-50"
+            :disabled="webhookWorking || !hasToken"
+            @click="setupWebhook"
+          >
+            <Icon name="fa6-solid:plug" class="mr-1" />
+            {{ webhookWorking ? 'Se configurează…' : (settings?.telegram.webhookActive ? 'Reconfigurează webhook' : 'Activează webhook') }}
+          </button>
+          <button
+            v-if="settings?.telegram.webhookActive"
+            type="button"
+            class="text-xs px-4 py-2.5 rounded-xl border border-slate-200 dark:border-dark-border text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 font-semibold transition disabled:opacity-50"
+            :disabled="webhookWorking"
+            @click="removeWebhook"
+          >
+            <Icon name="fa6-solid:plug-circle-xmark" class="mr-1" />Dezactivează
+          </button>
+        </div>
+        <p v-if="!hasToken" class="text-[11px] text-slate-500 mt-2">
+          Setează mai întâi un Bot Token.
+        </p>
+        <p v-else class="text-[11px] text-slate-500 dark:text-slate-400 mt-2">
+          Serverul trebuie să fie accesibil public (HTTPS). Setează <code>NUXT_PUBLIC_SITE_URL</code> în mediu.
+        </p>
+      </BentoCard>
+
+      <!-- Mini App -->
+      <BentoCard class="mb-6">
+        <h2 class="text-[11px] font-bold text-primary uppercase tracking-wider mb-4">Mini App Telegram</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">
+          Botul include un buton <b>Deschide panoul admin</b> care deschide interfața de admin direct în Telegram, fără browser separat.
+        </p>
+        <div class="p-3 rounded-xl bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border text-xs text-slate-600 dark:text-slate-300 space-y-2">
+          <p><Icon name="fa6-solid:circle-check" class="text-green-500 mr-1" /><b>Integrat automat</b> — butonul apare în meniul principal al botului</p>
+          <p><Icon name="fa6-solid:circle-check" class="text-green-500 mr-1" />Trimite <code>/start</code> botului și apasă <b>🌐 Deschide panoul admin</b></p>
+          <p><Icon name="fa6-solid:triangle-exclamation" class="text-amber-500 mr-1" />Necesită <code>NUXT_PUBLIC_SITE_URL</code> setat corect și webhook activ</p>
         </div>
       </BentoCard>
 

@@ -7,7 +7,7 @@ import { getSettings, saveSettings } from '~~/server/utils/settings'
  * Returns the new `lastReadAt`.
  */
 export default defineEventHandler(async (event) => {
-  requireAdmin(event)
+  await requireAdmin(event)
   const current = await getSettings(event)
   const next = { ...current, lastReadAt: Date.now() }
   await saveSettings(event, next)

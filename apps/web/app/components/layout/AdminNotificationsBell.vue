@@ -68,7 +68,7 @@ onClickOutside(root, () => (open.value = false))
             v-for="entry in items"
             :key="entry.kind + ':' + entry.item.id"
             class="px-4 py-3 border-b border-slate-100 dark:border-dark-border last:border-0 hover:bg-slate-50 dark:hover:bg-dark-hover cursor-pointer"
-            @click="visit('/admin/leads')"
+            @click="visit(entry.kind === 'lead' ? `/admin/leads?tab=leads&focus=${entry.item.id}` : `/admin/leads?tab=bookings&focus=${entry.item.id}`)"
           >
             <div class="flex items-start gap-2">
               <span
@@ -79,7 +79,7 @@ onClickOutside(root, () => (open.value = false))
               </span>
               <div class="min-w-0">
                 <p class="text-xs font-semibold text-slate-800 dark:text-slate-100">
-                  {{ entry.kind === 'lead' ? 'Lead nou' : 'Programare nouă' }}
+                  {{ entry.kind === 'lead' ? 'Comandă nouă' : 'Programare nouă' }}
                 </p>
                 <p class="text-[11px] text-slate-600 dark:text-slate-300 truncate">
                   {{ entry.item.name || '—' }}

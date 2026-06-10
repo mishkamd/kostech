@@ -2,7 +2,7 @@ import { requireAdmin } from '~~/server/utils/auth'
 import { kvGet } from '~~/server/utils/storage'
 
 export default defineEventHandler(async (event) => {
-  requireAdmin(event)
+  await requireAdmin(event)
 
   const id = getRouterParam(event, 'id')
   const idx = parseInt(getRouterParam(event, 'idx') ?? '', 10)
@@ -22,6 +22,10 @@ export default defineEventHandler(async (event) => {
   }
 
   const file = attachments[idx]
+  if (!file) {
+    throw createError({ statusCode: 404, statusMessage: 'Fișier negăsit' })
+  }
+
   const buf = Buffer.from(file.data, 'base64')
 
   setResponseHeader(event, 'Content-Type', file.type)

@@ -64,7 +64,7 @@ function create() {
             seenIds.add(k)
             toast.push({
               kind: 'lead',
-              title: 'Lead nou',
+              title: 'Comandă nouă',
               body: l.name || '—',
               href: '/admin/leads',
               ttl: 6000,
@@ -96,7 +96,13 @@ function create() {
   async function markRead() {
     try {
       await $fetch('/api/admin/notifications/mark-read', { method: 'POST' })
-      await refresh()
+      // Optimistically zero out the badge so the UI feels responsive.
+      // We deliberately do NOT refresh here — that would overwrite `latest`
+      // with the unread-filtered list and hide all items right after the user
+      // opened the bell. The 20s poll will reconcile the state.
+      if (payload.value) {
+        payload.value = { ...payload.value, count: 0 }
+      }
     } catch {
       // ignore — next poll will recover
     }

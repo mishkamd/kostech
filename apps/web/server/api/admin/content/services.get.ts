@@ -1,18 +1,18 @@
 import { defineEventHandler } from 'h3'
 import { requireAdmin } from '~~/server/utils/auth'
 import { kvGet } from '~~/server/utils/storage'
-import type { Service } from '~/content/services'
-import { services as defaultServices } from '~/content/services'
+import { defaultServicesForLang, mergeServices } from '~~/server/utils/services-defaults'
+import type { Service } from '~~/app/content/services'
 
 export default defineEventHandler(async (event) => {
-  requireAdmin(event)
+  await requireAdmin(event)
 
   const locales = ['ro', 'ru', 'en'] as const
-  const result: Record<string, Service[]> = {}
+  const result: Record<'ro' | 'ru' | 'en', Service[]> = { ro: [], ru: [], en: [] }
 
   for (const lang of locales) {
     const stored = await kvGet(event, `content:services:${lang}`) as Service[] | null
-    result[lang] = stored ?? defaultServices
+    result[lang] = mergeServices(defaultServicesForLang(lang), stored)
   }
 
   return result

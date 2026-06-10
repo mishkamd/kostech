@@ -13,7 +13,7 @@ const BodySchema = z
   .strict()
 
 export default defineEventHandler(async (event) => {
-  requireAdmin(event)
+  await requireAdmin(event)
 
   const raw = await readBody(event).catch(() => ({}))
   const parsed = BodySchema.safeParse(raw ?? {})

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { Service } from '~/content/services'
+import type { Service } from '~~/app/content/services'
 
-definePageMeta({ layout: 'admin', middleware: 'admin' })
+definePageMeta({ layout: 'admin' })
 useHead({ title: 'Servicii — Kostech Admin' })
 
 const { t } = useI18n()
@@ -29,9 +29,12 @@ function toggleExpand(slug: string) {
 
 // Local edit helpers
 function updateService(slug: string, patch: Partial<Service>) {
-  const arr = allData.value[currentLang.value] as Service[]
-  const idx = (arr as Service[]).findIndex(s => s.slug === slug)
-  if (idx >= 0) (arr as Service[])[idx] = { ...(arr as Service[])[idx], ...patch }
+  const arr = allData.value[currentLang.value]
+  const idx = arr.findIndex(s => s.slug === slug)
+  if (idx < 0) return
+  const existing = arr[idx]
+  if (!existing) return
+  arr[idx] = { ...existing, ...patch } as Service
 }
 
 function updateFeature(slug: string, fi: number, val: string) {
@@ -49,7 +52,8 @@ function removeFeature(slug: string, fi: number) {
 
 function updateFaq(slug: string, fi: number, key: 'q' | 'a', val: string) {
   const svc = (allData.value[currentLang.value] as Service[]).find(s => s.slug === slug)
-  if (svc) svc.faqs[fi][key] = val
+  const faq = svc?.faqs[fi]
+  if (faq) faq[key] = val
 }
 function addFaq(slug: string) {
   const svc = (allData.value[currentLang.value] as Service[]).find(s => s.slug === slug)
@@ -99,7 +103,7 @@ async function save() {
           :disabled="saving"
           @click="save"
         >
-          <Icon v-if="saving" name="fa6-solid:spin fa-spinner" class="text-xs" />
+          <Icon v-if="saving" name="fa6-solid:spinner" class="text-xs animate-spin" />
           <Icon v-else-if="saved" name="fa6-solid:check" class="text-xs" />
           <Icon v-else name="fa6-solid:save" class="text-xs" />
           {{ saved ? 'Salvat!' : saving ? 'Se salvează…' : 'Salvează' }}
@@ -127,6 +131,16 @@ async function save() {
             </div>
             <div class="flex items-center gap-3">
               <span class="text-sm text-slate-500">De la {{ svc.priceFrom }} {{ svc.currency }}</span>
+              <a
+                :href="`/servicii/${svc.slug}`"
+                target="_blank"
+                rel="noopener"
+                class="text-xs text-primary hover:text-primary-hover flex items-center gap-1"
+                @click.stop
+              >
+                <Icon name="fa6-solid:arrow-up-right-from-square" class="text-[10px]" />
+                Vezi
+              </a>
               <Icon
                 :name="expandedSlugs.has(svc.slug) ? 'fa6-solid:chevron-up' : 'fa6-solid:chevron-down'"
                 class="text-slate-400 text-sm"

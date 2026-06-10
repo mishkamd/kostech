@@ -9,10 +9,12 @@ import { kvList } from '~~/server/utils/storage'
  * so we don't need to mutate the records themselves.
  */
 export default defineEventHandler(async (event) => {
-  requireAdmin(event)
+  await requireAdmin(event)
 
   const settings = await getSettings(event)
   const lastReadAt = Number(settings.lastReadAt ?? 0)
+
+  const since = Date.now() - 7 * 24 * 60 * 60 * 1000 // 7 days
 
   const [leads, bookings] = await Promise.all([
     kvList(event, 'lead:'),
@@ -22,8 +24,16 @@ export default defineEventHandler(async (event) => {
   const isUnread = (x: { status?: string; createdAt?: number }) =>
     (x.status ?? 'new') === 'new' && (x.createdAt ?? 0) > lastReadAt
 
+  // Unread counts drive the badge; these are the ones that get reset on markRead.
   const unreadLeads = (leads as Array<{ status?: string; createdAt?: number }>).filter(isUnread)
   const unreadBookings = (bookings as Array<{ status?: string; createdAt?: number }>).filter(isUnread)
+
+  // For the dropdown list we want ALL recent items, not just unread ones,
+  // so the user keeps seeing the latest activity even after opening the bell.
+  const recentLeads = (leads as Array<{ createdAt?: number }>)
+    .filter((l) => (l.createdAt ?? 0) > since)
+  const recentBookings = (bookings as Array<{ createdAt?: number }>)
+    .filter((b) => (b.createdAt ?? 0) > since)
 
   const sortDesc = (a: { createdAt?: number }, b: { createdAt?: number }) =>
     (b.createdAt ?? 0) - (a.createdAt ?? 0)
@@ -43,8 +53,8 @@ export default defineEventHandler(async (event) => {
     count: unreadLeads.length + unreadBookings.length,
     lastReadAt,
     latest: {
-      leads: unreadLeads.sort(sortDesc).slice(0, 3).map(safe),
-      bookings: unreadBookings.sort(sortDesc).slice(0, 3).map(safe),
+      leads: recentLeads.sort(sortDesc).slice(0, 3).map(safe),
+      bookings: recentBookings.sort(sortDesc).slice(0, 3).map(safe),
     },
   }
 })

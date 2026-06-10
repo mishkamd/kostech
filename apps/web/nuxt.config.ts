@@ -76,6 +76,9 @@ export default defineNuxtConfig({
           crossorigin: '',
           href: '/fonts/inter-variable-latin.woff2',
         },
+        // Preconnect to Unsplash CDN for hero image — eliminates DNS + TCP + TLS from LCP critical path
+        { rel: 'preconnect', href: 'https://images.unsplash.com' },
+        { rel: 'dns-prefetch', href: 'https://images.unsplash.com' },
       ],
       meta: [
         { name: 'theme-color', media: '(prefers-color-scheme: light)', content: '#F8F9FA' },
@@ -101,7 +104,9 @@ export default defineNuxtConfig({
   },
 
   icon: {
-    serverBundle: { collections: ['fa6-solid', 'fa6-regular', 'fa6-brands', 'lucide'] },
+    // clientBundle with scan: true auto-tree-shakes — only icons actually used in templates
+    // are sent to the client. Drastically smaller than serverBundle which ships all collections.
+    clientBundle: { scan: true, sizeLimitKb: 256 },
   },
 
   image: {
@@ -110,11 +115,24 @@ export default defineNuxtConfig({
 
   nitro: {
     preset: 'cloudflare_pages',
+    devStorage: {
+      cache: { driver: 'fs', base: './.data/kv' },
+    },
     prerender: {
       routes: [
         '/', '/servicii', '/booking',
         '/ru', '/ru/servicii', '/ru/booking',
         '/en', '/en/servicii', '/en/booking',
+        // Service detail pages — 6 services × 3 locales
+        '/servicii/mentenanta-pc', '/servicii/administrare-servere',
+        '/servicii/proiectare-retele', '/servicii/securitate-it',
+        '/servicii/recuperare-date', '/servicii/consultanta-it',
+        '/ru/servicii/mentenanta-pc', '/ru/servicii/administrare-servere',
+        '/ru/servicii/proiectare-retele', '/ru/servicii/securitate-it',
+        '/ru/servicii/recuperare-date', '/ru/servicii/consultanta-it',
+        '/en/servicii/mentenanta-pc', '/en/servicii/administrare-servere',
+        '/en/servicii/proiectare-retele', '/en/servicii/securitate-it',
+        '/en/servicii/recuperare-date', '/en/servicii/consultanta-it',
       ],
       crawlLinks: true,
     },

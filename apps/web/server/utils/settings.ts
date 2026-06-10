@@ -15,6 +15,7 @@ export const TelegramConfigSchema = z.object({
   botToken: z.string().min(1).max(200).optional().default(''),
   chatId: z.string().min(1).max(64).optional().default(''),
   enabled: z.boolean().optional().default(false),
+  webhookSecret: z.string().max(256).optional().default(''),
 })
 
 export const NotificationTogglesSchema = z.object({
@@ -37,7 +38,7 @@ export type TelegramConfig = z.infer<typeof TelegramConfigSchema>
 const SETTINGS_KEY = 'settings:admin'
 
 export const DEFAULT_SETTINGS: Settings = {
-  telegram: { botToken: '', chatId: '', enabled: false },
+  telegram: { botToken: '', chatId: '', enabled: false, webhookSecret: '' },
   notifications: {
     leadCreated: true,
     bookingCreated: true,
@@ -93,6 +94,7 @@ export function sanitizeSettings(settings: Settings) {
       chatId: settings.telegram?.chatId ?? '',
       enabled: Boolean(settings.telegram?.enabled),
       configured: Boolean(token && settings.telegram?.chatId),
+      webhookActive: Boolean(settings.telegram?.webhookSecret),
     },
     notifications: {
       leadCreated: Boolean(settings.notifications?.leadCreated ?? true),

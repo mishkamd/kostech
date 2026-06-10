@@ -1,57 +1,70 @@
 <script setup lang="ts">
-import { services, getService } from '~/content/services'
-
+const { locale, t } = useI18n()
+const localePath = useLocalePath()
 const route = useRoute()
 const slug = computed(() => route.params.slug as string)
-const service = computed(() => getService(slug.value))
+
+const { data: services } = await useFetch('/api/content/services', {
+  query: computed(() => ({ lang: locale.value })),
+  watch: [locale],
+  default: () => [],
+})
+
+const service = computed(() => services.value.find((s) => s.slug === slug.value))
+const related = computed(() => services.value.filter((s) => s.slug !== slug.value))
 
 if (!service.value) {
-  throw createError({ statusCode: 404, statusMessage: 'Serviciu inexistent', fatal: true })
+  throw createError({ statusCode: 404, statusMessage: 'Not found', fatal: true })
 }
 
-const related = computed(() => services.filter((s) => s.slug !== slug.value))
+const notFoundMessages = computed(() => {
+  const map = {
+    ro: 'Serviciu inexistent',
+    ru: 'Услуга не найдена',
+    en: 'Service not found',
+  }
+  return map[locale.value as 'ro' | 'ru' | 'en'] ?? map.ro
+})
 
 useSeoMeta({
-  title: () => `${service.value!.title} — Kostech`,
-  description: () => service.value!.summary,
-  ogTitle: () => service.value!.title,
-  ogDescription: () => service.value!.summary,
-  ogImage: () => `/og/${service.value!.slug}.png`,
+  title: computed(() => service.value ? `${service.value.title} — Kostech` : notFoundMessages.value),
+  description: computed(() => service.value?.summary ?? ''),
+  ogTitle: computed(() => service.value?.title),
+  ogDescription: computed(() => service.value?.summary),
+  ogImage: computed(() => service.value ? `/og/${service.value.slug}.png` : undefined),
   twitterCard: 'summary_large_image',
-  twitterImage: () => `/og/${service.value!.slug}.png`,
+  twitterImage: computed(() => service.value ? `/og/${service.value.slug}.png` : undefined),
 })
 
-useHead({
-  script: [
-    {
-      type: 'application/ld+json',
-      innerHTML: computed(() =>
-        JSON.stringify({
-          '@context': 'https://schema.org',
-          '@type': 'Service',
-          name: service.value!.title,
-          description: service.value!.summary,
-          provider: { '@type': 'LocalBusiness', name: 'Kostech', telephone: '+37378643740', areaServed: 'MD' },
-          offers: { '@type': 'Offer', price: service.value!.priceFrom, priceCurrency: service.value!.currency },
-        }),
-      ),
-    },
-    {
-      type: 'application/ld+json',
-      innerHTML: computed(() =>
-        JSON.stringify({
-          '@context': 'https://schema.org',
-          '@type': 'FAQPage',
-          mainEntity: service.value!.faqs.map((f) => ({
-            '@type': 'Question',
-            name: f.q,
-            acceptedAnswer: { '@type': 'Answer', text: f.a },
-          })),
-        }),
-      ),
-    },
-  ],
-})
+useHead(() => ({
+  script: service.value
+    ? [
+        {
+          type: 'application/ld+json',
+          innerHTML: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Service',
+            name: service.value!.title,
+            description: service.value!.summary,
+            provider: { '@type': 'LocalBusiness', name: 'Kostech', telephone: '+37378643740', areaServed: 'MD' },
+            offers: { '@type': 'Offer', price: service.value!.priceFrom, priceCurrency: service.value!.currency },
+          }),
+        },
+        {
+          type: 'application/ld+json',
+          innerHTML: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: service.value!.faqs.map((f) => ({
+              '@type': 'Question',
+              name: f.q,
+              acceptedAnswer: { '@type': 'Answer', text: f.a },
+            })),
+          }),
+        },
+      ]
+    : [],
+}))
 
 const openFaq = ref<number | null>(0)
 </script>
@@ -64,22 +77,29 @@ const openFaq = ref<number | null>(0)
           <Icon :name="service.icon" />
         </div>
         <div class="min-w-0 flex-1">
-          <p class="text-[11px] font-bold text-primary uppercase tracking-wider">Serviciu</p>
+          <p class="text-[11px] font-bold text-primary uppercase tracking-wider">{{ t('serviciiPage.eyebrow') }}</p>
           <h1 class="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mt-1">{{ service.title }}</h1>
           <p class="text-slate-500 dark:text-slate-400 mt-2">{{ service.summary }}</p>
         </div>
         <div class="hidden md:flex flex-col items-end gap-2">
           <div class="bg-primary/10 dark:bg-primary/20 text-primary px-4 py-2 rounded-xl font-bold text-sm whitespace-nowrap">
-            De la {{ service.priceFrom }} {{ service.currency }}
+            {{ t('serviciiPage.from') }} {{ service.priceFrom }} {{ service.currency }}
           </div>
-          <UiButton to="/booking">Programează</UiButton>
+          <UiButton :to="localePath('/booking')">{{ t('booking.cta') }}</UiButton>
         </div>
+      </div>
+      <!-- Mobile price + CTA -->
+      <div class="flex items-center gap-3 mt-4 md:hidden">
+        <div class="bg-primary/10 dark:bg-primary/20 text-primary px-4 py-2 rounded-xl font-bold text-sm whitespace-nowrap">
+          {{ t('serviciiPage.from') }} {{ service.priceFrom }} {{ service.currency }}
+        </div>
+        <UiButton :to="localePath('/booking')" size="sm">{{ t('booking.cta') }}</UiButton>
       </div>
     </BentoCard>
 
     <BentoGrid>
       <BentoCard>
-        <h2 class="text-[11px] font-bold text-primary uppercase tracking-wider mb-5">Ce includem</h2>
+        <h2 class="text-[11px] font-bold text-primary uppercase tracking-wider mb-5">{{ t('serviceDetail.includes') }}</h2>
         <ul class="space-y-3">
           <li v-for="f in service.features" :key="f" class="flex items-start gap-3 text-sm text-slate-700 dark:text-slate-300">
             <Icon name="fa6-solid:circle-check" class="text-primary mt-0.5 shrink-0 text-base" /> {{ f }}
@@ -88,7 +108,7 @@ const openFaq = ref<number | null>(0)
       </BentoCard>
 
       <BentoCard>
-        <h2 class="text-[11px] font-bold text-primary uppercase tracking-wider mb-5">Întrebări frecvente</h2>
+        <h2 class="text-[11px] font-bold text-primary uppercase tracking-wider mb-5">{{ t('serviceDetail.faq') }}</h2>
         <div class="space-y-2">
           <div v-for="(faq, i) in service.faqs" :key="faq.q" class="border border-slate-100 dark:border-dark-border rounded-2xl overflow-hidden">
             <button
@@ -107,7 +127,7 @@ const openFaq = ref<number | null>(0)
       </BentoCard>
 
       <BentoCard>
-        <h2 class="text-[11px] font-bold text-primary uppercase tracking-wider mb-5">Servicii conexe</h2>
+        <h2 class="text-[11px] font-bold text-primary uppercase tracking-wider mb-5">{{ t('serviceDetail.related') }}</h2>
         <div class="space-y-2">
           <NuxtLink
             v-for="r in related"

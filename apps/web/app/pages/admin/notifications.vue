@@ -152,8 +152,8 @@ await load()
                 <Icon name="fa6-solid:envelope-open-text" />
               </span>
               <div class="min-w-0">
-                <p class="text-sm font-semibold text-slate-800 dark:text-slate-100">Lead — schimbare status</p>
-                <p class="text-[11px] text-slate-500 dark:text-slate-400">Când muți un lead la in_progress / done / canceled.</p>
+                <p class="text-sm font-semibold text-slate-800 dark:text-slate-100">Comandă — schimbare status</p>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400">Când muți o comandă la in_progress / done / canceled.</p>
               </div>
             </div>
             <input v-model="toggles.leadStatusChanged" type="checkbox" class="w-5 h-5 rounded border-slate-300 text-primary focus:ring-2 focus:ring-primary/40">

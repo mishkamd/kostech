@@ -14,7 +14,7 @@ function stripAttachmentData(item: any) {
 }
 
 export default defineEventHandler(async (event) => {
-  requireAdmin(event)
+  await requireAdmin(event)
   const items = await kvList(event, 'booking:')
   return items
     .sort((a: any, b: any) => (b.createdAt ?? 0) - (a.createdAt ?? 0))

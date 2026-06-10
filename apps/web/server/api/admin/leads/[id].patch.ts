@@ -4,7 +4,7 @@ import { LeadUpdateSchema } from '~~/server/utils/validation'
 import { notifyEvent } from '~~/server/utils/notifications'
 
 export default defineEventHandler(async (event) => {
-  requireAdmin(event)
+  await requireAdmin(event)
   const id = getRouterParam(event, 'id')
   if (!id) throw createError({ statusCode: 400, statusMessage: 'ID lipsă' })
   const body = await readBody(event)

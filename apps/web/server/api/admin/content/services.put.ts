@@ -1,10 +1,10 @@
 import { defineEventHandler, readBody } from 'h3'
 import { requireAdmin } from '~~/server/utils/auth'
 import { kvPut } from '~~/server/utils/storage'
-import type { Service } from '~/content/services'
+import type { Service } from '~~/app/content/services'
 
 export default defineEventHandler(async (event) => {
-  requireAdmin(event)
+  await requireAdmin(event)
 
   const body = await readBody<{ lang: string; services: Service[] }>(event)
 

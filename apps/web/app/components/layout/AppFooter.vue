@@ -1,11 +1,19 @@
 <script setup lang="ts">
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const localePath = useLocalePath()
+
+const { data: services } = await useFetch('/api/content/services', {
+  query: computed(() => ({ lang: locale.value })),
+  watch: [locale],
+  default: () => [],
+})
+
+const footerServices = computed(() => services.value.slice(0, 4))
 </script>
 
 <template>
   <footer class="mt-8">
-    <div class="bg-white dark:bg-dark-card border border-transparent dark:border-dark-border rounded-bento shadow-card dark:shadow-dark-card p-8 grid gap-8 md:grid-cols-4">
+    <div class="bg-white dark:bg-dark-card border border-transparent dark:border-dark-border rounded-bento shadow-card dark:shadow-dark-card p-6 sm:p-8 grid gap-6 sm:gap-8 grid-cols-2 md:grid-cols-4">
       <div>
         <div class="flex items-center gap-3 mb-3">
           <div class="w-9 h-9 bg-primary/10 dark:bg-primary/20 text-primary rounded-full flex items-center justify-center">
@@ -21,10 +29,9 @@ const localePath = useLocalePath()
       <div>
         <h4 class="text-[11px] font-bold text-primary uppercase tracking-wider mb-3">{{ t('footer.services') }}</h4>
         <ul class="space-y-2 text-sm">
-          <li><NuxtLink :to="localePath('/servicii/mentenanta-pc')" class="hover:text-primary text-slate-600 dark:text-slate-400">Mentenanță PC</NuxtLink></li>
-          <li><NuxtLink :to="localePath('/servicii/administrare-servere')" class="hover:text-primary text-slate-600 dark:text-slate-400">Administrare servere</NuxtLink></li>
-          <li><NuxtLink :to="localePath('/servicii/proiectare-retele')" class="hover:text-primary text-slate-600 dark:text-slate-400">Proiectare rețele</NuxtLink></li>
-          <li><NuxtLink :to="localePath('/servicii/securitate-it')" class="hover:text-primary text-slate-600 dark:text-slate-400">Securitate IT</NuxtLink></li>
+          <li v-for="s in footerServices" :key="s.slug">
+            <NuxtLink :to="localePath(`/servicii/${s.slug}`)" class="hover:text-primary text-slate-600 dark:text-slate-400">{{ s.title }}</NuxtLink>
+          </li>
         </ul>
       </div>
 

@@ -11,10 +11,11 @@ export interface HomepageContent {
     successTitle: string; successText: string
     errorRequired: string; errorGeneric: string
   }
-  services: { title: string; fromLabel: string }
+  services: { title: string; fromLabel: string; moreLabel: string }
   location: { title: string; city: string; mapsLabel: string; mapsUrl: string }
   cta: { title: string; heading: string; text: string; btnLabel: string }
   seo: { title: string; description: string }
+  layoutOrder: string[]
 }
 
 export const defaultContent: Record<string, HomepageContent> = {
@@ -45,7 +46,7 @@ export const defaultContent: Record<string, HomepageContent> = {
       errorRequired: 'Te rugăm să completezi numele și telefonul.',
       errorGeneric: 'A apărut o eroare. Încearcă din nou.',
     },
-    services: { title: 'Servicii principale', fromLabel: 'De la' },
+    services: { title: 'Servicii principale', fromLabel: 'De la', moreLabel: 'Vezi mai multe servicii' },
     location: {
       title: 'Locație', city: 'Chișinău, Republica Moldova',
       mapsLabel: 'Deschide Google Maps', mapsUrl: 'https://maps.app.goo.gl/MAqnSnd3QdHuKNtv6',
@@ -59,6 +60,7 @@ export const defaultContent: Record<string, HomepageContent> = {
       title: 'Kostech — Servicii IT și mentenanță PC în Chișinău',
       description: 'Mentenanță PC și laptop, administrare servere, proiectare rețele și securitate IT pentru afaceri din Chișinău.',
     },
+    layoutOrder: ['hero', 'services', 'contact', 'location', 'cta', 'form', 'stats'],
   },
   ru: {
     hero: {
@@ -87,7 +89,7 @@ export const defaultContent: Record<string, HomepageContent> = {
       errorRequired: 'Пожалуйста, заполните имя и телефон.',
       errorGeneric: 'Произошла ошибка. Попробуйте ещё раз.',
     },
-    services: { title: 'Основные услуги', fromLabel: 'От' },
+    services: { title: 'Основные услуги', fromLabel: 'От', moreLabel: 'Все услуги' },
     location: {
       title: 'Расположение', city: 'Кишинёв, Республика Молдова',
       mapsLabel: 'Открыть Google Maps', mapsUrl: 'https://maps.app.goo.gl/MAqnSnd3QdHuKNtv6',
@@ -101,6 +103,7 @@ export const defaultContent: Record<string, HomepageContent> = {
       title: 'Kostech — IT-услуги и обслуживание ПК в Кишинёве',
       description: 'Обслуживание ПК и ноутбуков, администрирование серверов, проектирование сетей и IT-безопасность для бизнеса в Кишинёве.',
     },
+    layoutOrder: ['hero', 'services', 'contact', 'location', 'cta', 'form', 'stats'],
   },
   en: {
     hero: {
@@ -129,7 +132,7 @@ export const defaultContent: Record<string, HomepageContent> = {
       errorRequired: 'Please fill in your name and phone.',
       errorGeneric: 'An error occurred. Please try again.',
     },
-    services: { title: 'Our services', fromLabel: 'From' },
+    services: { title: 'Our services', fromLabel: 'From', moreLabel: 'See all services' },
     location: {
       title: 'Location', city: 'Chișinău, Republic of Moldova',
       mapsLabel: 'Open Google Maps', mapsUrl: 'https://maps.app.goo.gl/MAqnSnd3QdHuKNtv6',
@@ -143,6 +146,7 @@ export const defaultContent: Record<string, HomepageContent> = {
       title: 'Kostech — IT Services & PC Maintenance in Chișinău',
       description: 'PC and laptop maintenance, server administration, network design and IT security for businesses in Chișinău, Moldova.',
     },
+    layoutOrder: ['hero', 'services', 'contact', 'location', 'cta', 'form', 'stats'],
   },
 }
 
