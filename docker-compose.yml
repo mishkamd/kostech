@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  kostech:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kostech-web
+    ports:
+      - "3000:3000"
+    environment:
+      # ── Required ──────────────────────────────────────────────────────────
+      # Admin panel password (also used as bootstrap admin on first run).
+      # CHANGE THIS in production.
+      - NUXT_ADMIN_TOKEN=${NUXT_ADMIN_TOKEN:-dev-admin-token}
+
+      # Canonical public URL (used for sitemap, OG tags, canonical links).
+      - NUXT_PUBLIC_SITE_URL=${NUXT_PUBLIC_SITE_URL:-http://localhost:3000}
+
+      # ── Optional: Telegram notifications ───────────────────────────────────
+      # - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      # - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
+
+    volumes:
+      # Persistent KV storage — survives container rebuilds.
+      # In dev/staging this is filesystem-backed (mirrors Cloudflare KV in prod).
+      - kv-data:/app/.data/kv
+
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  kv-data:
+    driver: local

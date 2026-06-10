@@ -50,7 +50,7 @@ useSeoMeta({
     <BentoCard class="!mb-6">
       <div class="text-center max-w-2xl mx-auto">
         <p class="text-[11px] font-bold text-primary uppercase tracking-wider mb-3">{{ t('serviciiPage.eyebrow') }}</p>
-        <h1 class="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-white">
+        <h1 class="font-heading text-xl md:text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white">
           {{ t('serviciiPage.title') }}
         </h1>
         <p class="text-slate-500 dark:text-slate-400 mt-3">

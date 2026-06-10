@@ -26,7 +26,7 @@ export default defineNuxtConfig({
     detectBrowserLanguage: {
       useCookie: true,
       cookieKey: 'kostech-locale',
-      redirectOn: 'root',
+      redirectOn: false,
     },
   },
 
@@ -95,14 +95,6 @@ export default defineNuxtConfig({
     },
   },
 
-  runtimeConfig: {
-    turnstileSecretKey: '',
-    public: {
-      siteUrl: 'https://kostech.md',
-      turnstileSiteKey: '',
-    },
-  },
-
   icon: {
     // clientBundle with scan: true auto-tree-shakes — only icons actually used in templates
     // are sent to the client. Drastically smaller than serverBundle which ships all collections.
@@ -114,7 +106,15 @@ export default defineNuxtConfig({
   },
 
   nitro: {
-    preset: 'cloudflare_pages',
+    // Override via NITRO_PRESET=node_server for Docker deployments
+    preset: (process.env.NITRO_PRESET as string) || 'cloudflare_pages',
+    // Production storage for non-Cloudflare deployments (Docker / bare metal).
+    // On Cloudflare Pages the KV binding (event.context.cloudflare.env.CACHE)
+    // is used directly by server/utils/storage.ts — this mount is only hit when
+    // the KV binding is absent (dev mode + node-server production).
+    storage: {
+      cache: { driver: 'fs', base: './.data/kv' },
+    },
     devStorage: {
       cache: { driver: 'fs', base: './.data/kv' },
     },

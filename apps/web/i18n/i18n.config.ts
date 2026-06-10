@@ -3,7 +3,7 @@ export default defineI18nConfig(() => ({
   locale: 'ro',
   messages: {
     ro: {
-      nav: { services: 'Servicii', booking: 'Programare', contact: 'Contact' },
+      nav: { services: 'Servicii', booking: 'Programare' },
       footer: {
         tagline: 'Servicii IT pentru afaceri din Chișinău: mentenanță, securitate, rețele și suport.',
         services: 'Servicii', company: 'Companie', contact: 'Contact',
@@ -11,7 +11,6 @@ export default defineI18nConfig(() => ({
         rights: 'Toate drepturile rezervate.', city: 'Chișinău, Moldova',
       },
       theme: { dark: 'Activează modul întunecat', light: 'Activează modul luminos' },
-      phone: 'Sună-ne',
       serviciiPage: {
         eyebrow: 'Servicii',
         title: 'Tot ce-ți trebuie pentru un IT fără griji',
@@ -60,7 +59,7 @@ export default defineI18nConfig(() => ({
       },
     },
     ru: {
-      nav: { services: 'Услуги', booking: 'Запись', contact: 'Контакты' },
+      nav: { services: 'Услуги', booking: 'Запись' },
       footer: {
         tagline: 'IT-услуги для бизнеса в Кишинёве: обслуживание, безопасность, сети и поддержка.',
         services: 'Услуги', company: 'Компания', contact: 'Контакты',
@@ -68,7 +67,6 @@ export default defineI18nConfig(() => ({
         rights: 'Все права защищены.', city: 'Кишинёв, Молдова',
       },
       theme: { dark: 'Тёмный режим', light: 'Светлый режим' },
-      phone: 'Позвонить',
       serviciiPage: {
         eyebrow: 'Услуги',
         title: 'Всё, что нужно для спокойного IT',
@@ -117,7 +115,7 @@ export default defineI18nConfig(() => ({
       },
     },
     en: {
-      nav: { services: 'Services', booking: 'Book', contact: 'Contact' },
+      nav: { services: 'Services', booking: 'Book' },
       footer: {
         tagline: 'IT services for businesses in Chișinău: maintenance, security, networking and support.',
         services: 'Services', company: 'Company', contact: 'Contact',
@@ -125,7 +123,6 @@ export default defineI18nConfig(() => ({
         rights: 'All rights reserved.', city: 'Chișinău, Moldova',
       },
       theme: { dark: 'Enable dark mode', light: 'Enable light mode' },
-      phone: 'Call us',
       serviciiPage: {
         eyebrow: 'Services',
         title: 'Everything you need for worry-free IT',

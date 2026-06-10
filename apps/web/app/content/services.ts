@@ -447,13 +447,3 @@ export const defaultServices: Record<'ro' | 'ru' | 'en', Service[]> = {
 
 // Backwards-compat: keep `services` as the RO default so legacy imports keep working.
 export const services: Service[] = defaultServices.ro
-
-export type ServiceLocale = 'ro' | 'ru' | 'en'
-
-export function getService(slug: string, locale: ServiceLocale = 'ro'): Service | undefined {
-  return defaultServices[locale].find((s) => s.slug === slug)
-}
-
-export function getServicesForLocale(locale: ServiceLocale): Service[] {
-  return defaultServices[locale] ?? defaultServices.ro
-}

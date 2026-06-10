@@ -11,7 +11,6 @@ const { data: services } = await useFetch('/api/content/services', {
 })
 
 const service = computed(() => services.value.find((s) => s.slug === slug.value))
-const related = computed(() => services.value.filter((s) => s.slug !== slug.value))
 
 if (!service.value) {
   throw createError({ statusCode: 404, statusMessage: 'Not found', fatal: true })
@@ -130,12 +129,15 @@ const openFaq = ref<number | null>(0)
         <h2 class="text-[11px] font-bold text-primary uppercase tracking-wider mb-5">{{ t('serviceDetail.related') }}</h2>
         <div class="space-y-2">
           <NuxtLink
-            v-for="r in related"
+            v-for="r in services"
             :key="r.slug"
-            :to="`/servicii/${r.slug}`"
+            :to="localePath(`/servicii/${r.slug}`)"
             class="flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-dark-hover transition"
+            :class="r.slug === slug ? 'bg-primary/8 dark:bg-primary/10' : ''"
           >
-            <div class="w-10 h-10 shrink-0 rounded-full bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border flex items-center justify-center text-slate-500 dark:text-slate-400">
+            <div class="w-10 h-10 shrink-0 rounded-full bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border flex items-center justify-center text-slate-500 dark:text-slate-400"
+              :class="r.slug === slug ? 'text-primary border-primary/30' : ''"
+            >
               <Icon :name="r.icon" />
             </div>
             <div class="min-w-0">

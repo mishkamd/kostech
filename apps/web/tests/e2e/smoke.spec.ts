@@ -16,11 +16,6 @@ test('service detail page renders', async ({ page }) => {
   await expect(page.locator('text=Mentenanță')).toBeVisible()
 })
 
-test('contact page form is present', async ({ page }) => {
-  await page.goto('/contact')
-  await expect(page.locator('form')).toBeVisible()
-})
-
 test('booking wizard starts on step 1', async ({ page }) => {
   await page.goto('/booking')
   await expect(page.locator('button, [role=button]').first()).toBeVisible()

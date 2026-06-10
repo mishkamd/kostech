@@ -14,13 +14,12 @@ interface HomepageContent {
   layoutOrder: string[]
 }
 
-const DEFAULT_SECTION_ORDER = ['hero', 'services', 'stats', 'form', 'contact', 'location', 'cta'] as const
+const DEFAULT_SECTION_ORDER = ['hero', 'services', 'stats', 'form', 'contact', 'location'] as const
 const SECTION_LABELS: Record<string, string> = {
   hero: 'Hero (profil)',
   services: 'Servicii principale',
   form: 'Formular comandă',
   location: 'Locație',
-  cta: 'Programare rapidă',
   stats: 'Cifre',
   contact: 'Date de contact',
 }
@@ -91,10 +90,12 @@ function removeStat(i: number) {
 }
 
 function ensureLayoutOrder(): boolean {
-  // Pick first non-empty saved order across languages, else default — then apply to all
-  const canonical = (['ro', 'ru', 'en'] as const)
+  const knownSections = new Set(Object.keys(SECTION_LABELS))
+  // Pick first non-empty saved order across languages, filter unknown sections, else default
+  const canonical = ((['ro', 'ru', 'en'] as const)
     .map(l => allContent.value[l]?.layoutOrder)
     .find(o => Array.isArray(o) && o.length > 0)
+    ?.filter(s => knownSections.has(s)))
     ?? [...DEFAULT_SECTION_ORDER]
   let changed = false
   for (const lang of Object.keys(allContent.value)) {
@@ -105,17 +106,6 @@ function ensureLayoutOrder(): boolean {
     }
   }
   return changed
-}
-
-const globalOrder = computed<string[]>(() =>
-  allContent.value.ro?.layoutOrder ?? [...DEFAULT_SECTION_ORDER]
-)
-
-function syncAllLocalesOrder(newOrder: string[]) {
-  for (const lang of Object.keys(allContent.value)) {
-    const c = allContent.value[lang]
-    if (c) c.layoutOrder = [...newOrder]
-  }
 }
 
 async function saveAllLocales() {
@@ -129,8 +119,6 @@ async function saveAllLocales() {
         })
       )
     )
-    savedMsg.value = 'Ordine salvată'
-    setTimeout(() => (savedMsg.value = ''), 3000)
   } catch (e: any) {
     if (e?.status === 401 || e?.statusCode === 401) {
       router.push('/admin/login')
@@ -140,22 +128,6 @@ async function saveAllLocales() {
   } finally {
     autoSaving.value = false
   }
-}
-
-function moveSectionUp(i: number) {
-  if (i === 0) return
-  const order = [...globalOrder.value]
-  ;[order[i - 1], order[i]] = [order[i]!, order[i - 1]!]
-  syncAllLocalesOrder(order)
-  saveAllLocales()
-}
-
-function moveSectionDown(i: number) {
-  const order = [...globalOrder.value]
-  if (i >= order.length - 1) return
-  ;[order[i], order[i + 1]] = [order[i + 1]!, order[i]!]
-  syncAllLocalesOrder(order)
-  saveAllLocales()
 }
 
 let _pendingOrderSync = false
@@ -224,46 +196,6 @@ const previewUrl = computed(() => {
     </div>
 
     <template v-else-if="current">
-      <!-- Layout order -->
-      <BentoCard class="mb-6">
-        <h2 class="text-[11px] font-bold text-primary uppercase tracking-wider mb-4">Ordinea blocurilor</h2>
-        <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Ordinea este aceeași pentru toate limbile. Modificările se salvează automat și sunt imediat vizibile pe pagina publică.</p>
-        <div class="space-y-2">
-          <div
-            v-for="(key, i) in globalOrder"
-            :key="key"
-            class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border"
-          >
-            <span class="w-5 h-5 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center shrink-0">{{ i + 1 }}</span>
-            <span class="flex-1 text-sm font-semibold text-slate-800 dark:text-slate-200">{{ SECTION_LABELS[key] ?? key }}</span>
-            <div class="flex gap-1">
-              <button
-                type="button"
-                :disabled="i === 0"
-                class="w-8 h-8 rounded-lg border border-slate-200 dark:border-dark-border flex items-center justify-center text-slate-500 hover:text-primary hover:border-primary/40 transition disabled:opacity-30 disabled:cursor-not-allowed"
-                @click="moveSectionUp(i)"
-              >
-                <Icon name="fa6-solid:chevron-up" class="text-xs" />
-              </button>
-              <button
-                type="button"
-                :disabled="i === globalOrder.length - 1"
-                class="w-8 h-8 rounded-lg border border-slate-200 dark:border-dark-border flex items-center justify-center text-slate-500 hover:text-primary hover:border-primary/40 transition disabled:opacity-30 disabled:cursor-not-allowed"
-                @click="moveSectionDown(i)"
-              >
-                <Icon name="fa6-solid:chevron-down" class="text-xs" />
-              </button>
-            </div>
-          </div>
-        </div>
-        <p v-if="autoSaving" class="text-xs text-slate-400 mt-3 flex items-center gap-1">
-          <Icon name="fa6-solid:spinner" class="animate-spin" /> Se salvează...
-        </p>
-        <p v-else-if="savedMsg" class="text-xs text-green-600 mt-3 flex items-center gap-1">
-          <Icon name="fa6-solid:check" /> {{ savedMsg }}
-        </p>
-      </BentoCard>
-
       <!-- Two-column grid -->
       <div class="grid md:grid-cols-2 gap-6">
         <!-- Left col -->
@@ -362,18 +294,6 @@ const previewUrl = computed(() => {
             </div>
           </BentoCard>
 
-          <!-- CTA -->
-          <BentoCard>
-            <h2 class="text-[11px] font-bold text-primary uppercase tracking-wider mb-4">CTA (programare rapidă)</h2>
-            <div class="grid sm:grid-cols-2 gap-3">
-              <UiInput v-model="current.cta.title" label="Titlu" id="cta-title" />
-              <UiInput v-model="current.cta.heading" label="Heading" id="cta-h" />
-              <UiInput v-model="current.cta.btnLabel" label="Etichetă buton" id="cta-btn" />
-            </div>
-            <div class="mt-3">
-              <UiTextarea v-model="current.cta.text" :rows="3" label="Text" id="cta-text" />
-            </div>
-          </BentoCard>
         </div>
       </div>
 

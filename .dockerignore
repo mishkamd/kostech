@@ -1,0 +1,73 @@
+# Dependencies (installed fresh in container)
+node_modules
+apps/*/node_modules
+packages/*/node_modules
+
+# Build outputs (generated in container)
+.nuxt
+.output
+dist
+apps/*/.nuxt
+apps/*/.output
+apps/*/dist
+
+# Local dev data
+.data
+apps/*/.data
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Cloudflare
+.wrangler
+apps/*/.wrangler
+
+# IDE / editor
+.idea
+.vscode
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# CI / testing
+.github
+apps/*/tests
+apps/*/playwright.config.ts
+apps/*/lighthouserc.cjs
+
+# -----------------------------------------------------------
+# Agent / AI assistant state
+# -----------------------------------------------------------
+.agents
+.claude
+.codegraph
+.copilot
+.cursor
+.gemini
+.kiro
+.omc
+.offline-markdown-preview
+.qoder
+.roo
+.windsurf
+
+# Agent config & lock files
+CLAUDE.md
+RTK.md
+skills-lock.json
+.github/instructions
+.github/skills
+.github/skills-lock.json
+
+# Docs & misc (keep only README)
+*.md
+!README.md
+LICENSE

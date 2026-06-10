@@ -15,8 +15,10 @@ function stripAttachmentData(item: any) {
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
-  const items = await kvList(event, 'lead:')
-  return items
-    .sort((a: any, b: any) => (b.createdAt ?? 0) - (a.createdAt ?? 0))
-    .map(stripAttachmentData)
+  const query = getQuery(event)
+  const limit = query._limit ? Number(query._limit) : 0
+  let items = await kvList(event, 'lead:')
+  items = items.sort((a: any, b: any) => (b.createdAt ?? 0) - (a.createdAt ?? 0))
+  if (limit > 0) items = items.slice(0, limit)
+  return items.map(stripAttachmentData)
 })

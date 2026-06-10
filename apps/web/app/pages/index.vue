@@ -80,8 +80,9 @@ const submit = async () => {
       body: { ...form, scheduledAt: selected.value, source: 'home', attachments: attachmentPayload },
     })
     submitted.value = true
-  } catch (e: any) {
-    errorMsg.value = e?.data?.message || (content.value?.form?.errorGeneric ?? 'A apărut o eroare.')
+  } catch (e: unknown) {
+    const err = e as { data?: { message?: string } }
+    errorMsg.value = err.data?.message || (content.value?.form?.errorGeneric ?? 'A apărut o eroare.')
   } finally {
     submitting.value = false
   }

@@ -9,12 +9,35 @@ dist
 .env.*
 !.env.example
 
-# Agent / IDE / editor local state (per-user, not for version control)
+# -----------------------------------------------------------
+# Agent / AI assistant state (per-user, never versioned)
+# -----------------------------------------------------------
 .agents/
+.claude/
+.codegraph/
 .copilot/
+.cursor/
+.gemini/
+.kiro/
+.omc/
 .offline-markdown-preview/
+.qoder/
+.roo/
+.windsurf/
+
+# Claude Code auto-generated lock files
+skills-lock.json
+CLAUDE.md
+RTK.md
 
 # GitHub Copilot instruction/skill scaffolding (kept under workflows/ for CI)
 .github/instructions/
 .github/skills/
 .github/skills-lock.json
+
+# IDE / editor local state
+.idea/
+.vscode/
+*.swp
+*.swo
+*~

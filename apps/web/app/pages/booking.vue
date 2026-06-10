@@ -90,8 +90,9 @@ async function submit() {
 
     await $fetch('/api/bookings', { method: 'POST', body: { ...data, attachments: attachmentPayload, locale: locale.value } })
     done.value = true
-  } catch (e: any) {
-    errorMsg.value = e?.data?.message || t('booking.errors.generic')
+  } catch (e: unknown) {
+    const err = e as { data?: { message?: string } }
+    errorMsg.value = err.data?.message || t('booking.errors.generic')
   } finally {
     submitting.value = false
   }
