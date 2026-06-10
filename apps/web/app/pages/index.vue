@@ -150,16 +150,6 @@ const submit = async () => {
         </a>
       </div>
 
-      <!-- Stats -->
-      <div
-        v-if="content?.stats?.items?.length"
-        class="mt-10 pt-8 border-t border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-x-8 gap-y-5 max-w-lg"
-      >
-        <div v-for="item in content.stats.items" :key="item.label">
-          <div class="font-heading text-3xl sm:text-4xl font-bold text-white tabular-nums leading-none">{{ item.value }}</div>
-          <div class="text-[10px] font-medium text-slate-400 mt-1.5 uppercase tracking-wider">{{ item.label }}</div>
-        </div>
-      </div>
       </div><!-- /left col -->
 
       <!-- Right: pc2.svg illustration -->
