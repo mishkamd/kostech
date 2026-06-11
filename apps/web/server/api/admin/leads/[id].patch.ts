@@ -2,6 +2,7 @@ import { requireAdmin } from '~~/server/utils/auth'
 import { kvGet, kvPut } from '~~/server/utils/storage'
 import { LeadUpdateSchema } from '~~/server/utils/validation'
 import { notifyEvent } from '~~/server/utils/notifications'
+import { kvCacheInvalidate } from '~~/server/utils/kvCache'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
@@ -15,6 +16,7 @@ export default defineEventHandler(async (event) => {
   const previousStatus = String((current as { status?: string }).status ?? '')
   const updated = { ...current, ...parsed.data }
   await kvPut(event, `lead:${id}`, updated)
+  kvCacheInvalidate('lead:')
 
   // Only notify on actual status changes (not on name/email edits).
   if (parsed.data.status && parsed.data.status !== previousStatus) {

@@ -1,5 +1,6 @@
 import { requireAdmin } from '~~/server/utils/auth'
 import { kvGet, kvDelete } from '~~/server/utils/storage'
+import { kvCacheInvalidate } from '~~/server/utils/kvCache'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
@@ -8,5 +9,6 @@ export default defineEventHandler(async (event) => {
   const current = await kvGet(event, `lead:${id}`)
   if (!current) throw createError({ statusCode: 404, statusMessage: 'Inexistent' })
   await kvDelete(event, `lead:${id}`)
+  kvCacheInvalidate('lead:')
   return { ok: true }
 })

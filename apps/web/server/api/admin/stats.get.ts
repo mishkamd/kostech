@@ -1,11 +1,12 @@
 import { requireAdmin } from '~~/server/utils/auth'
 import { kvList } from '~~/server/utils/storage'
+import { kvCacheGet, kvCacheSet } from '~~/server/utils/kvCache'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
   const [leads, bookings] = await Promise.all([
-    kvList(event, 'lead:'),
-    kvList(event, 'booking:'),
+    Promise.resolve(kvCacheGet('lead:') ?? kvList(event, 'lead:').then(r => { kvCacheSet('lead:', r); return r })),
+    Promise.resolve(kvCacheGet('booking:') ?? kvList(event, 'booking:').then(r => { kvCacheSet('booking:', r); return r })),
   ])
   const since = Date.now() - 24 * 60 * 60 * 1000
   const newToday =

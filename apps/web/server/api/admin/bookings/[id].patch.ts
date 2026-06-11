@@ -2,6 +2,7 @@ import { requireAdmin } from '~~/server/utils/auth'
 import { kvGet, kvPut } from '~~/server/utils/storage'
 import { BookingUpdateSchema } from '~~/server/utils/validation'
 import { notifyEvent } from '~~/server/utils/notifications'
+import { kvCacheInvalidate } from '~~/server/utils/kvCache'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
@@ -15,6 +16,7 @@ export default defineEventHandler(async (event) => {
   const previousStatus = String((current as { status?: string }).status ?? '')
   const updated = { ...current, ...parsed.data }
   await kvPut(event, `booking:${id}`, updated)
+  kvCacheInvalidate('booking:')
 
   if (updated.status !== previousStatus) {
     await notifyEvent(event, 'booking.status_changed', updated, previousStatus).catch(() => {})
