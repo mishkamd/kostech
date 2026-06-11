@@ -1,7 +1,3 @@
-/**
- * Shared attachment handling — DRYs up fileToBase64, file validation,
- * and file input management used by booking and contact forms.
- */
 export function useAttachments(options?: {
   maxFiles?: number
   maxSize?: number
@@ -15,11 +11,7 @@ export function useAttachments(options?: {
 
   const attachments = ref<File[]>([])
   const error = ref('')
-  const imageInputRef = ref<HTMLInputElement | null>(null)
-  const fileInputRef = ref<HTMLInputElement | null>(null)
-
-  function pickImages() { imageInputRef.value?.click() }
-  function pickFiles() { fileInputRef.value?.click() }
+  const previewUrls = ref(new Map<File, string>())
 
   function handleFileInput(e: Event) {
     const input = e.target as HTMLInputElement
@@ -39,14 +31,35 @@ export function useAttachments(options?: {
         error.value = `Fișierul ${f.name} depășește ${MAX_SIZE / 1024 / 1024} MB.`
         return
       }
+      if (f.type.startsWith('image/')) {
+        const map = new Map(previewUrls.value)
+        map.set(f, URL.createObjectURL(f))
+        previewUrls.value = map
+      }
       attachments.value = [...attachments.value, f]
     }
     error.value = ''
   }
 
   function removeAttachment(idx: number) {
+    const f = attachments.value[idx]
+    if (f) {
+      const url = previewUrls.value.get(f)
+      if (url) {
+        URL.revokeObjectURL(url)
+        const map = new Map(previewUrls.value)
+        map.delete(f)
+        previewUrls.value = map
+      }
+    }
     attachments.value = attachments.value.filter((_, i) => i !== idx)
   }
+
+  onUnmounted(() => {
+    for (const url of previewUrls.value.values()) {
+      URL.revokeObjectURL(url)
+    }
+  })
 
   function fileToBase64(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -77,14 +90,11 @@ export function useAttachments(options?: {
   return {
     attachments,
     error: readonly(error),
-    imageInputRef,
-    fileInputRef,
-    pickImages,
-    pickFiles,
     handleFileInput,
     addFiles,
     removeAttachment,
     buildAttachmentPayload,
+    previewUrls,
     isMaxed,
     MAX_FILES,
     MAX_SIZE,

@@ -6,6 +6,7 @@ interface SettingsShape {
   telegram: {
     botToken: string
     chatId: string
+    chatIds: string[]
     enabled: boolean
     configured: boolean
     webhookActive: boolean
@@ -22,7 +23,7 @@ interface SettingsShape {
 
 const settings = ref<SettingsShape | null>(null)
 const tokenInput = ref('')
-const chatId = ref('')
+const chatIds = ref<string[]>([''])
 const enabled = ref(false)
 const loading = ref(true)
 const saving = ref(false)
@@ -93,7 +94,7 @@ async function load() {
   try {
     const data = await $fetch<SettingsShape>('/api/admin/settings')
     settings.value = data
-    chatId.value = data.telegram.chatId
+    chatIds.value = data.telegram.chatIds?.length ? [...data.telegram.chatIds] : (data.telegram.chatId ? [data.telegram.chatId] : [''])
     enabled.value = data.telegram.enabled
     tokenInput.value = ''
   } catch (e: any) {
@@ -110,7 +111,7 @@ async function save() {
   try {
     const body: Record<string, unknown> = {
       telegram: {
-        chatId: chatId.value,
+        chatIds: chatIds.value.filter(id => id.trim()),
         enabled: enabled.value,
         // Only send the token if the user actually typed something. The '****'
         // marker is the explicit "no change" signal handled by the server.
@@ -139,7 +140,7 @@ async function clearToken() {
   try {
     const res = await $fetch<{ ok: boolean; settings: SettingsShape }>('/api/admin/settings', {
       method: 'PUT',
-      body: { telegram: { botToken: null, chatId: chatId.value, enabled: false } },
+      body: { telegram: { botToken: null, chatIds: chatIds.value, enabled: false } },
     })
     settings.value = res.settings
     enabled.value = false
@@ -176,6 +177,7 @@ async function sendTest() {
 }
 
 const hasToken = computed(() => Boolean(settings.value?.telegram.botToken))
+const hasAnyChatId = computed(() => chatIds.value.some(id => id.trim() !== ''))
 const configStatus = computed(() => {
   if (!hasToken.value) return { label: 'Bot neconfigurat', color: 'slate' as const }
   if (!enabled.value) return { label: 'Bot conectat, notificări dezactivate', color: 'amber' as const }
@@ -251,12 +253,36 @@ await fetchWebhookInfo()
             </p>
           </div>
 
-          <UiInput
-            v-model="chatId"
-            label="Chat ID"
-            id="tg-chat"
-            placeholder="123456789 sau -100… pentru grup"
-          />
+          <div>
+            <label class="block text-sm font-semibold mb-2 dark:text-slate-300">Chat ID-uri</label>
+            <div v-for="(cid, idx) in chatIds" :key="idx" class="flex gap-2 mb-2">
+              <input
+                :value="cid"
+                @input="chatIds[idx] = ($event.target as HTMLInputElement).value"
+                type="text"
+                :placeholder="idx === 0 ? '123456789 sau -100… pentru grup' : 'Chat ID suplimentar'"
+                class="flex-1 bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border rounded-xl px-4 py-3 text-sm font-mono text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
+              <button
+                type="button"
+                class="px-3 py-2 rounded-xl border border-slate-200 dark:border-dark-border text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 text-xs disabled:opacity-40"
+                :disabled="chatIds.length === 1"
+                @click="chatIds.splice(idx, 1)"
+              >
+                <Icon name="fa6-solid:trash" />
+              </button>
+            </div>
+            <button
+              type="button"
+              class="text-xs px-4 py-2 rounded-xl border border-dashed border-slate-300 dark:border-dark-border text-slate-600 dark:text-slate-400 hover:border-primary hover:text-primary transition mt-1"
+              @click="chatIds.push('')"
+            >
+              <Icon name="fa6-solid:plus" class="mr-1" />Adaugă Chat ID
+            </button>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5">
+              Poți adăuga mai mulți destinatari. Notificările se trimit către toate ID-urile.
+            </p>
+          </div>
 
           <label class="flex items-center gap-3 cursor-pointer">
             <input
@@ -299,15 +325,15 @@ await fetchWebhookInfo()
           <button
             type="button"
             class="text-xs px-5 py-2.5 rounded-xl bg-primary text-white font-semibold hover:opacity-90 transition disabled:opacity-50"
-            :disabled="testing || !hasToken || !chatId"
+            :disabled="testing || !hasToken || !hasAnyChatId"
             @click="sendTest"
           >
             <Icon name="fa6-solid:paper-plane" class="mr-1" />
             {{ testing ? 'Se trimite…' : 'Trimite mesaj test' }}
           </button>
         </div>
-        <p v-if="!hasToken" class="text-[11px] text-slate-500 mt-2">
-          Setează mai întâi un Bot Token pentru a putea testa.
+        <p v-if="!hasToken || !hasAnyChatId" class="text-[11px] text-slate-500 mt-2">
+          Setează mai întâi un Bot Token și cel puțin un Chat ID.
         </p>
 
         <div v-if="testResult" class="mt-4 p-3 rounded-xl text-xs flex items-start gap-2"

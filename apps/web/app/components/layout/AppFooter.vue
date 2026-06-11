@@ -28,16 +28,16 @@ const footerServices = computed(() => services.value.slice(0, 4))
 
       <div>
         <h4 class="text-[11px] font-bold text-primary uppercase tracking-wider mb-3">{{ t('footer.services') }}</h4>
-        <ul class="space-y-2 text-sm">
+        <ul class="space-y-2 text-xs sm:text-sm">
           <li v-for="s in footerServices" :key="s.slug">
-            <NuxtLink :to="localePath(`/servicii/${s.slug}`)" class="hover:text-primary text-slate-600 dark:text-slate-400">{{ s.title }}</NuxtLink>
+            <NuxtLink :to="localePath(`/servicii/${s.slug}`)" class="hover:text-primary text-slate-600 dark:text-slate-400 leading-snug block">{{ s.title }}</NuxtLink>
           </li>
         </ul>
       </div>
 
       <div>
         <h4 class="text-[11px] font-bold text-primary uppercase tracking-wider mb-3">{{ t('footer.company') }}</h4>
-        <ul class="space-y-2 text-sm">
+        <ul class="space-y-2 text-xs sm:text-sm">
           <li><NuxtLink :to="localePath('/booking')" class="hover:text-primary text-slate-600 dark:text-slate-400">{{ t('footer.bookVisit') }}</NuxtLink></li>
           <li><a href="/admin" class="hover:text-primary text-slate-600 dark:text-slate-400">{{ t('footer.admin') }}</a></li>
         </ul>
@@ -45,10 +45,10 @@ const footerServices = computed(() => services.value.slice(0, 4))
 
       <div>
         <h4 class="text-[11px] font-bold text-primary uppercase tracking-wider mb-3">{{ t('footer.contact') }}</h4>
-        <ul class="space-y-2 text-sm text-slate-600 dark:text-slate-400">
-          <li class="flex items-center gap-2"><Icon name="fa6-solid:phone" /> <a href="tel:+37378643740" class="hover:text-primary">+373 78 643 740</a></li>
-          <li class="flex items-center gap-2"><Icon name="fa6-solid:envelope" /> <a href="mailto:hello@kostech.md" class="hover:text-primary">hello@kostech.md</a></li>
-          <li class="flex items-center gap-2"><Icon name="fa6-regular:paper-plane" /> {{ t('footer.city') }}</li>
+        <ul class="space-y-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+          <li class="flex items-start gap-2"><Icon name="fa6-solid:phone" class="mt-0.5 shrink-0" /> <a href="tel:+37378643740" class="hover:text-primary whitespace-nowrap">+373 78 643 740</a></li>
+          <li class="flex items-start gap-2"><Icon name="fa6-solid:envelope" class="mt-0.5 shrink-0" /> <a href="mailto:hello@kostech.md" class="hover:text-primary break-all">hello@kostech.md</a></li>
+          <li class="flex items-start gap-2"><Icon name="fa6-regular:paper-plane" class="mt-0.5 shrink-0" /> {{ t('footer.city') }}</li>
         </ul>
       </div>
     </div>

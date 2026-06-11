@@ -23,7 +23,10 @@ export default defineEventHandler(async (event) => {
 
   const settings = await getSettings(event)
   const botToken = settings.telegram?.botToken ?? ''
-  const chatId = parsed.data.chatId || settings.telegram?.chatId || ''
+  const chatId = parsed.data.chatId
+    || settings.telegram?.chatIds?.[0]
+    || settings.telegram?.chatId
+    || ''
 
   if (!botToken) {
     throw createError({ statusCode: 400, statusMessage: 'Bot token nu este configurat' })

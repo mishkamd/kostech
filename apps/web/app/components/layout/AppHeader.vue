@@ -63,11 +63,25 @@ watch(() => route.path, () => { mobileMenuOpen.value = false })
     <!-- Mobile nav drawer -->
     <div v-show="mobileMenuOpen" class="lg:hidden border-t border-slate-100 dark:border-dark-border px-4 sm:px-6 py-3 space-y-1">
       <NuxtLink
+        :to="localePath('/')"
+        class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-dark-hover transition text-sm font-medium text-slate-700 dark:text-slate-200"
+      >
+        <Icon name="fa6-solid:house" class="text-primary text-sm shrink-0" />
+        {{ t('nav.home') }}
+      </NuxtLink>
+      <NuxtLink
         :to="localePath('/servicii')"
         class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-dark-hover transition text-sm font-medium text-slate-700 dark:text-slate-200"
       >
         <Icon name="fa6-solid:server" class="text-primary text-sm shrink-0" />
         {{ t('nav.services') }}
+      </NuxtLink>
+      <NuxtLink
+        :to="localePath('/booking')"
+        class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-dark-hover transition text-sm font-medium text-slate-700 dark:text-slate-200"
+      >
+        <Icon name="fa6-solid:calendar-check" class="text-primary text-sm shrink-0" />
+        {{ t('nav.booking') }}
       </NuxtLink>
     </div>
   </header>

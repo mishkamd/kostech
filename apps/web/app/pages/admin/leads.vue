@@ -64,15 +64,16 @@ if (import.meta.client) {
 
 // ── Edit modal ──────────────────────────────────────────────
 const editTarget = ref<any>(null)
-const editForm = reactive({ name: '', phone: '', message: '', location: '', status: 'new' })
+const editForm = reactive({ name: '', phone: '', message: '', location: '', scheduledAt: '', status: 'new' })
 const editSaving = ref(false)
 
 function openEdit(lead: any) {
   editTarget.value = lead
   editForm.name = lead.name ?? ''
   editForm.phone = lead.phone ?? ''
-  editForm.message = lead.message ?? ''
+  editForm.message = lead.message || lead.description || ''
   editForm.location = lead.location ?? ''
+  editForm.scheduledAt = lead.scheduledAt ?? ''
   editForm.status = lead.status ?? 'new'
 }
 
@@ -182,6 +183,7 @@ async function doDeleteBooking() {
             <th class="py-3 pr-4">Nume</th>
             <th class="py-3 pr-4">Contact</th>
             <th class="py-3 pr-4">Locație</th>
+            <th class="py-3 pr-4">Dată dorită</th>
             <th class="py-3 pr-4">Mesaj</th>
             <th class="py-3 pr-4">Status</th>
             <th class="py-3 pr-4">Creat</th>
@@ -194,7 +196,8 @@ async function doDeleteBooking() {
             <td class="py-3 pr-4 font-semibold text-slate-900 dark:text-white">{{ l.name }}</td>
             <td class="py-3 pr-4 text-slate-600 dark:text-slate-300">{{ l.phone || '—' }}</td>
             <td class="py-3 pr-4 text-slate-500 max-w-[180px] truncate">{{ l.location || '—' }}</td>
-            <td class="py-3 pr-4 text-slate-600 dark:text-slate-300 max-w-xs truncate">{{ l.message }}</td>
+            <td class="py-3 pr-4 text-slate-500 text-xs whitespace-nowrap">{{ l.scheduledAt || '—' }}</td>
+            <td class="py-3 pr-4 text-slate-600 dark:text-slate-300 max-w-xs truncate">{{ l.message || l.description || '—' }}</td>
             <td class="py-3 pr-4">
               <select
                 :value="l.status"
@@ -384,6 +387,10 @@ async function doDeleteBooking() {
             <div>
               <label class="block text-xs font-medium text-slate-500 mb-1">Telefon</label>
               <input v-model="editForm.phone" type="text" class="w-full rounded-lg border border-slate-200 dark:border-dark-border bg-slate-50 dark:bg-dark-bg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/40" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">Dată dorită</label>
+              <input v-model="editForm.scheduledAt" type="text" placeholder="ex: 2026-06-12" class="w-full rounded-lg border border-slate-200 dark:border-dark-border bg-slate-50 dark:bg-dark-bg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/40" />
             </div>
             <div class="sm:col-span-2">
               <label class="block text-xs font-medium text-slate-500 mb-1">Mesaj</label>

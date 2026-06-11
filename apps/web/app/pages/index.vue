@@ -4,13 +4,11 @@ const { locale, t } = useI18n()
 // Fetch homepage content for current locale (server merges KV override + defaults)
 const { data: content } = await useFetch('/api/content/homepage', {
   query: computed(() => ({ lang: locale.value })),
-  watch: [locale],
 })
 
 // Fetch services for current locale
 const { data: services } = await useFetch('/api/content/services', {
   query: computed(() => ({ lang: locale.value })),
-  watch: [locale],
   default: () => [],
 })
 
@@ -27,7 +25,8 @@ useSeoMeta({
 
 const localePath = useLocalePath()
 
-const DEFAULT_ORDER = ['hero', 'services', 'contact', 'location', 'form', 'stats']
+// Fixed layout order — not driven by KV so it never changes on locale/content switch.
+const SECTION_ORDER = ['services', 'form', 'contact', 'location', 'stats']
 
 const defaultStats = [
   { value: '500+', label: 'Clienți mulțumiți' },
@@ -35,12 +34,9 @@ const defaultStats = [
   { value: '1h', label: 'Răspuns mediu' },
   { value: '24/7', label: 'Suport critic' },
 ]
-const orderedSections = computed(() =>
-  content.value?.layoutOrder?.length ? [...content.value.layoutOrder] : DEFAULT_ORDER
-)
 
 const today = new Date()
-const dates = Array.from({ length: 4 }).map((_, i) => {
+const dates = computed(() => Array.from({ length: 4 }).map((_, i) => {
   const d = new Date(today)
   d.setDate(today.getDate() + i)
   const dateLocale = locale.value === 'ru' ? 'ru-RU' : locale.value === 'en' ? 'en-US' : 'ro-RO'
@@ -49,8 +45,8 @@ const dates = Array.from({ length: 4 }).map((_, i) => {
     month: d.toLocaleDateString(dateLocale, { month: 'short' }).toUpperCase().replace('.', ''),
     iso: d.toISOString().slice(0, 10),
   }
-})
-const selected = ref(dates[1]?.iso)
+}))
+const selected = ref(dates.value[1]?.iso)
 
 const form = reactive({ name: '', phone: '', location: '', description: '' })
 const submitting = ref(false)
@@ -59,10 +55,9 @@ const errorMsg = ref('')
 
 const {
   attachments, error: attachmentError,
-  imageInputRef, fileInputRef,
-  pickImages, pickFiles, handleFileInput,
+  handleFileInput,
   removeAttachment, buildAttachmentPayload,
-  isMaxed, MAX_FILES,
+  previewUrls, isMaxed, MAX_FILES,
 } = useAttachments()
 
 const submit = async () => {
@@ -137,16 +132,16 @@ const submit = async () => {
       </p>
 
       <!-- CTAs -->
-      <div class="mt-8 flex flex-wrap gap-3">
-        <UiButton :to="localePath('/booking')" size="lg">
-          {{ content?.cta?.btnLabel ?? 'Programare rapidă' }}
+      <div class="mt-6 sm:mt-8 flex gap-2 sm:gap-3">
+        <UiButton :to="localePath('/booking')" size="md" class="whitespace-nowrap !px-4 sm:!min-h-12 sm:!px-7 sm:!text-base">
+          {{ content?.cta?.btnLabel ?? 'Programează acum' }}
           <Icon name="fa6-solid:arrow-right" />
         </UiButton>
         <a
           href="tel:+37378643740"
-          class="inline-flex items-center gap-2 min-h-12 px-7 text-base rounded-xl font-semibold transition border border-white/15 text-slate-200 hover:bg-white/8 hover:border-white/25"
+          class="inline-flex items-center gap-2 min-h-11 px-4 sm:min-h-12 sm:px-7 text-sm sm:text-base rounded-xl font-semibold transition border border-white/15 text-slate-200 hover:bg-white/8 hover:border-white/25 whitespace-nowrap"
         >
-          <Icon name="fa6-solid:phone" class="text-sm" />
+          <Icon name="fa6-solid:phone" class="text-xs sm:text-sm" />
           {{ content?.hero?.ctaPhoneLabel ?? 'Sună-ne' }}
         </a>
       </div>
@@ -162,7 +157,7 @@ const submit = async () => {
 
   <!-- ── Bento Grid ────────────────────────────────────────────────────── -->
   <BentoGrid>
-    <template v-for="key in orderedSections" :key="key">
+    <template v-for="key in SECTION_ORDER" :key="key">
 
     <!-- Services -->
     <BentoCard v-if="key === 'services'" class="lg:col-span-2 flex flex-col justify-between">
@@ -237,10 +232,16 @@ const submit = async () => {
           <div
             v-for="(f, idx) in attachments"
             :key="idx"
-            class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-dark-bg border border-slate-200 dark:border-dark-border text-xs text-slate-600 dark:text-slate-300"
+            class="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-100 dark:bg-dark-bg border border-slate-200 dark:border-dark-border text-xs text-slate-600 dark:text-slate-300 overflow-hidden"
           >
-            <Icon :name="f.type === 'application/pdf' ? 'fa6-solid:file-pdf' : 'fa6-regular:image'" class="text-slate-400 shrink-0" />
-            <span class="max-w-[120px] truncate">{{ f.name }}</span>
+            <img
+              v-if="previewUrls.get(f)"
+              :src="previewUrls.get(f)"
+              :alt="f.name"
+              class="w-8 h-8 rounded object-cover shrink-0"
+            />
+            <Icon v-else name="fa6-solid:file-pdf" class="text-red-400 shrink-0" />
+            <span class="max-w-[100px] truncate">{{ f.name }}</span>
             <button type="button" class="ml-0.5 text-slate-400 hover:text-red-500 transition" @click="removeAttachment(idx)">
               <Icon name="fa6-solid:xmark" class="text-[10px]" />
             </button>
@@ -248,14 +249,22 @@ const submit = async () => {
         </div>
         <div class="flex items-center justify-between pt-3 sm:pt-4 mt-auto border-t border-slate-100 dark:border-dark-border">
           <div class="flex gap-1.5 sm:gap-2">
-            <input ref="imageInputRef" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple class="hidden" @change="handleFileInput" />
-            <input ref="fileInputRef" type="file" accept="application/pdf" multiple class="hidden" @change="handleFileInput" />
-            <button type="button" aria-label="Atașează imagine" class="w-8 h-8 rounded-full hover:bg-slate-50 dark:hover:bg-dark-hover text-slate-400 flex items-center justify-center transition" :class="isMaxed ? 'opacity-40 cursor-not-allowed' : ''" :disabled="isMaxed" @click="pickImages">
+            <label
+              aria-label="Atașează imagine"
+              class="w-8 h-8 rounded-full hover:bg-slate-50 dark:hover:bg-dark-hover text-slate-400 flex items-center justify-center transition cursor-pointer"
+              :class="isMaxed ? 'opacity-40 pointer-events-none' : ''"
+            >
+              <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple class="hidden" :disabled="isMaxed" @change="handleFileInput" />
               <Icon name="fa6-regular:image" />
-            </button>
-            <button type="button" aria-label="Atașează fișier PDF" class="w-8 h-8 rounded-full hover:bg-slate-50 dark:hover:bg-dark-hover text-slate-400 flex items-center justify-center transition" :class="isMaxed ? 'opacity-40 cursor-not-allowed' : ''" :disabled="isMaxed" @click="pickFiles">
+            </label>
+            <label
+              aria-label="Atașează fișier PDF"
+              class="w-8 h-8 rounded-full hover:bg-slate-50 dark:hover:bg-dark-hover text-slate-400 flex items-center justify-center transition cursor-pointer"
+              :class="isMaxed ? 'opacity-40 pointer-events-none' : ''"
+            >
+              <input type="file" accept="application/pdf" multiple class="hidden" :disabled="isMaxed" @change="handleFileInput" />
               <Icon name="fa6-solid:paperclip" />
-            </button>
+            </label>
           </div>
           <UiButton type="submit" :disabled="submitting">
             {{ submitting ? (content?.form?.submittingLabel ?? 'Se trimite…') : (content?.form?.submitLabel ?? 'Trimite comanda') }}
@@ -273,11 +282,10 @@ const submit = async () => {
           target="_blank" rel="noopener noreferrer"
           class="block h-24 sm:h-28 bg-slate-100 dark:bg-dark-bg rounded-2xl relative overflow-hidden border border-slate-200 dark:border-dark-border group cursor-pointer transition-all hover:border-primary/50 shadow-sm hover:shadow-md"
         >
-          <img
-            src="https://www.transparenttextures.com/patterns/cartographer.png"
-            alt="" class="w-full h-full object-cover opacity-20 dark:opacity-10 dark:invert group-hover:scale-105 transition-transform duration-500"
-            loading="lazy"
-          >
+          <div
+            class="absolute inset-0 opacity-20 dark:opacity-10 group-hover:scale-105 transition-transform duration-500"
+            style="background-image: radial-gradient(circle, #635BFF 1px, transparent 1px); background-size: 18px 18px;"
+          />
           <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
             <div class="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center animate-pulse">
               <div class="w-4 h-4 bg-primary rounded-full border-2 border-white dark:border-dark-bg shadow-md group-hover:scale-125 transition-transform duration-300" />

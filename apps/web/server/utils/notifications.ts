@@ -27,6 +27,7 @@ interface RecordLike {
   status?: string
   source?: string
   scheduledAt?: string
+  attachments?: Array<{ name: string; type: string; size: number }>
 }
 
 const escapeHtml = (s: string) =>
@@ -51,12 +52,16 @@ function formatMessage(event: NotificationEventName, rec: RecordLike, previousSt
 
   if (event === 'lead.created') {
     const msg = truncate(format(rec.message || rec.description, '(fără mesaj)'), 600)
+    const attachCount = rec.attachments?.length ?? 0
     return [
       '✉️ <b>Lead nou</b>',
       `<b>Nume:</b> ${name}`,
       `<b>Tel:</b> ${phone}`,
       email ? `<b>Email:</b> ${email}` : '',
+      rec.location ? `<b>Locație:</b> ${format(rec.location)}` : '',
+      rec.scheduledAt ? `<b>Dată dorită:</b> ${format(rec.scheduledAt)}` : '',
       `<b>Mesaj:</b> ${msg}`,
+      attachCount ? `<b>Fișiere:</b> ${attachCount}` : '',
       rec.source ? `<b>Sursă:</b> ${format(rec.source)}` : '',
       `<i>#${escapeHtml(id)}</i>`,
     ].filter(Boolean).join('\n')
@@ -121,16 +126,19 @@ export async function notifyEvent(
     const settings = await getSettings(event)
     if (!settings.telegram?.enabled) return
     const token = settings.telegram?.botToken ?? ''
-    const chatId = settings.telegram?.chatId ?? ''
-    if (!token || !chatId) return
+    const chatIds = settings.telegram?.chatIds?.length
+      ? settings.telegram.chatIds
+      : (settings.telegram?.chatId ? [settings.telegram.chatId] : [])
+    if (!token || chatIds.length === 0) return
     const toggles = settings.notifications ?? {}
     const toggleKey = toggleFor(name)
     if (toggles[toggleKey] === false) return
 
     const text = formatMessage(name, record, previousStatus)
-    const result = await sendTelegramMessage(token, chatId, text)
-    if (!result.ok) {
-      console.warn('[notify] telegram failed', name, result)
+    const results = await Promise.all(chatIds.map(cid => sendTelegramMessage(token, cid, text)))
+    const failed = results.filter(r => !r.ok)
+    if (failed.length) {
+      console.warn('[notify] telegram failed for some chatIds', name, failed)
     }
   } catch (err) {
     console.warn('[notify] skipped', name, (err as Error).message)

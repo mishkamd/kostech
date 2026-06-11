@@ -64,5 +64,7 @@ export const LeadUpdateSchema = z.object({
   email: z.string().email().max(160).optional().or(z.literal('')),
   phone: z.string().min(5).max(40).optional().or(z.literal('')),
   message: z.string().max(2000).optional().or(z.literal('')),
+  description: z.string().max(2000).optional().or(z.literal('')),
   location: z.string().max(200).optional().or(z.literal('')),
+  scheduledAt: z.string().max(40).optional().or(z.literal('')),
 })

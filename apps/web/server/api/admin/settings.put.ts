@@ -14,6 +14,7 @@ const PutBodySchema = z
       .object({
         botToken: z.union([z.string().min(1), z.null()]).optional(),
         chatId: z.string().max(64).optional(),
+        chatIds: z.array(z.string().max(64)).optional(),
         enabled: z.boolean().optional(),
       })
       .optional(),
@@ -54,6 +55,7 @@ export default defineEventHandler(async (event) => {
       }
     }
     if (incoming.telegram.chatId !== undefined) mergedTg.chatId = incoming.telegram.chatId
+    if (incoming.telegram.chatIds !== undefined) mergedTg.chatIds = incoming.telegram.chatIds
     if (incoming.telegram.enabled !== undefined) mergedTg.enabled = incoming.telegram.enabled
     next.telegram = mergedTg
   }

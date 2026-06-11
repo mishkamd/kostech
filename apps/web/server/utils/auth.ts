@@ -70,7 +70,7 @@ export async function createUser(event: H3Event, username: string, password: str
   return safe
 }
 
-// Bootstrap: create default admin from env vars if no users exist yet
+// Bootstrap: create default admin from env vars if no users exist yet.
 export async function ensureBootstrapUser(event: H3Event): Promise<void> {
   const existing = await kvList(event, 'user:')
   if (existing.length > 0) return
@@ -89,11 +89,13 @@ export async function createSession(event: H3Event, userId: string): Promise<voi
   const expiresAt = new Date(Date.now() + SESSION_TTL * 1000).toISOString()
   await kvPut(event, `session:${token}`, { token, userId, expiresAt })
   const isProd = process.env.NODE_ENV === 'production'
+  // SameSite=None is required for Telegram Mini App (cross-origin iframe); Secure is mandatory with SameSite=None.
+  // In local dev (HTTP) we fall back to Lax so the cookie still works.
   setCookie(event, SESSION_COOKIE, token, {
-    httpOnly: true, sameSite: 'lax', secure: isProd, path: '/', maxAge: SESSION_TTL,
+    httpOnly: true, sameSite: isProd ? 'none' : 'lax', secure: isProd, path: '/', maxAge: SESSION_TTL,
   })
   setCookie(event, 'kostech_admin_ok', '1', {
-    httpOnly: false, sameSite: 'lax', secure: isProd, path: '/', maxAge: SESSION_TTL,
+    httpOnly: false, sameSite: isProd ? 'none' : 'lax', secure: isProd, path: '/', maxAge: SESSION_TTL,
   })
 }
 

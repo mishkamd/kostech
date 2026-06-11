@@ -14,6 +14,7 @@ import { kvGet, kvPut } from './storage'
 export const TelegramConfigSchema = z.object({
   botToken: z.string().min(1).max(200).optional().default(''),
   chatId: z.string().min(1).max(64).optional().default(''),
+  chatIds: z.array(z.string().max(64)).optional().default([]),
   enabled: z.boolean().optional().default(false),
   webhookSecret: z.string().max(256).optional().default(''),
 })
@@ -38,7 +39,7 @@ export type TelegramConfig = z.infer<typeof TelegramConfigSchema>
 const SETTINGS_KEY = 'settings:admin'
 
 export const DEFAULT_SETTINGS: Settings = {
-  telegram: { botToken: '', chatId: '', enabled: false, webhookSecret: '' },
+  telegram: { botToken: '', chatId: '', chatIds: [], enabled: false, webhookSecret: '' },
   notifications: {
     leadCreated: true,
     bookingCreated: true,
@@ -57,8 +58,13 @@ export const DEFAULT_SETTINGS: Settings = {
 export async function getSettings(event: H3Event): Promise<Settings> {
   const raw = await kvGet(event, SETTINGS_KEY)
   if (!raw) return { ...DEFAULT_SETTINGS }
+  const tg = { ...DEFAULT_SETTINGS.telegram, ...(raw.telegram as object ?? {}) } as Settings['telegram']
+  // Migrate: single chatId → chatIds array
+  if ((!tg.chatIds || tg.chatIds.length === 0) && tg.chatId) {
+    tg.chatIds = [tg.chatId]
+  }
   const merged: Settings = {
-    telegram: { ...DEFAULT_SETTINGS.telegram, ...(raw.telegram as object ?? {}) } as Settings['telegram'],
+    telegram: tg,
     notifications: { ...DEFAULT_SETTINGS.notifications, ...(raw.notifications as object ?? {}) } as Settings['notifications'],
     lastReadAt: Number(raw.lastReadAt ?? 0),
     updatedAt: Number(raw.updatedAt ?? 0),
@@ -88,12 +94,16 @@ export async function saveSettings(event: H3Event, next: Settings): Promise<Sett
 export function sanitizeSettings(settings: Settings) {
   const token = settings.telegram?.botToken ?? ''
   const tail = token.length > 4 ? token.slice(-4) : ''
+  const chatIds = settings.telegram?.chatIds?.length
+    ? settings.telegram.chatIds
+    : (settings.telegram?.chatId ? [settings.telegram.chatId] : [])
   return {
     telegram: {
       botToken: token ? `****${tail}` : '',
-      chatId: settings.telegram?.chatId ?? '',
+      chatId: chatIds[0] ?? '',
+      chatIds,
       enabled: Boolean(settings.telegram?.enabled),
-      configured: Boolean(token && settings.telegram?.chatId),
+      configured: Boolean(token && chatIds.length > 0),
       webhookActive: Boolean(settings.telegram?.webhookSecret),
     },
     notifications: {

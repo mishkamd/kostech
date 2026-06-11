@@ -46,10 +46,9 @@ const errorMsg = ref('')
 
 const {
   attachments, error: attachmentError,
-  imageInputRef, fileInputRef,
-  pickImages, pickFiles, handleFileInput,
+  handleFileInput,
   removeAttachment, buildAttachmentPayload,
-  isMaxed, MAX_FILES,
+  previewUrls, isMaxed, MAX_FILES,
 } = useAttachments()
 
 const dateLocale = computed(() => {
@@ -206,14 +205,22 @@ const fileWord = computed(() => {
             class="w-full bg-slate-50 dark:bg-dark-bg border border-slate-100 dark:border-dark-border rounded-xl px-4 py-3 pr-24 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none transition-colors"
           />
           <div class="absolute bottom-3 right-3 flex items-center gap-2">
-            <input ref="imageInputRef" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple class="hidden" @change="handleFileInput" />
-            <input ref="fileInputRef" type="file" accept="application/pdf" multiple class="hidden" @change="handleFileInput" />
-            <button type="button" :aria-label="t('booking.attach.image')" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-500 dark:text-slate-400 hover:text-primary hover:border-primary/40 flex items-center justify-center transition" :class="isMaxed ? 'opacity-40 cursor-not-allowed' : ''" :disabled="isMaxed" @click="pickImages">
+            <label
+              :aria-label="t('booking.attach.image')"
+              class="w-8 h-8 rounded-full bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-500 dark:text-slate-400 hover:text-primary hover:border-primary/40 flex items-center justify-center transition cursor-pointer"
+              :class="isMaxed ? 'opacity-40 pointer-events-none' : ''"
+            >
+              <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple class="hidden" :disabled="isMaxed" @change="handleFileInput" />
               <Icon name="fa6-regular:image" />
-            </button>
-            <button type="button" :aria-label="t('booking.attach.pdf')" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-500 dark:text-slate-400 hover:text-primary hover:border-primary/40 flex items-center justify-center transition" :class="isMaxed ? 'opacity-40 cursor-not-allowed' : ''" :disabled="isMaxed" @click="pickFiles">
+            </label>
+            <label
+              :aria-label="t('booking.attach.pdf')"
+              class="w-8 h-8 rounded-full bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-500 dark:text-slate-400 hover:text-primary hover:border-primary/40 flex items-center justify-center transition cursor-pointer"
+              :class="isMaxed ? 'opacity-40 pointer-events-none' : ''"
+            >
+              <input type="file" accept="application/pdf" multiple class="hidden" :disabled="isMaxed" @change="handleFileInput" />
               <Icon name="fa6-solid:paperclip" />
-            </button>
+            </label>
           </div>
         </div>
         <div v-if="attachmentError" class="mt-1 text-xs text-red-500">{{ attachmentError }}</div>
@@ -221,10 +228,16 @@ const fileWord = computed(() => {
           <div
             v-for="(f, idx) in attachments"
             :key="idx"
-            class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-dark-bg border border-slate-200 dark:border-dark-border text-xs text-slate-600 dark:text-slate-300"
+            class="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-100 dark:bg-dark-bg border border-slate-200 dark:border-dark-border text-xs text-slate-600 dark:text-slate-300 overflow-hidden"
           >
-            <Icon :name="f.type === 'application/pdf' ? 'fa6-solid:file-pdf' : 'fa6-regular:image'" class="text-slate-400 shrink-0" />
-            <span class="max-w-[120px] truncate">{{ f.name }}</span>
+            <img
+              v-if="previewUrls.get(f)"
+              :src="previewUrls.get(f)"
+              :alt="f.name"
+              class="w-8 h-8 rounded object-cover shrink-0"
+            />
+            <Icon v-else name="fa6-solid:file-pdf" class="text-red-400 shrink-0" />
+            <span class="max-w-[100px] truncate">{{ f.name }}</span>
             <button type="button" class="ml-0.5 text-slate-400 hover:text-red-500 transition" @click="removeAttachment(idx)">
               <Icon name="fa6-solid:xmark" class="text-[10px]" />
             </button>

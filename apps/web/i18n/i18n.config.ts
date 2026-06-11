@@ -3,7 +3,7 @@ export default defineI18nConfig(() => ({
   locale: 'ro',
   messages: {
     ro: {
-      nav: { services: 'Servicii', booking: 'Programare' },
+      nav: { home: 'Acasă', services: 'Servicii', booking: 'Programare' },
       footer: {
         tagline: 'Servicii IT pentru afaceri din Chișinău: mentenanță, securitate, rețele și suport.',
         services: 'Servicii', company: 'Companie', contact: 'Contact',
@@ -59,7 +59,7 @@ export default defineI18nConfig(() => ({
       },
     },
     ru: {
-      nav: { services: 'Услуги', booking: 'Запись' },
+      nav: { home: 'Главная', services: 'Услуги', booking: 'Запись' },
       footer: {
         tagline: 'IT-услуги для бизнеса в Кишинёве: обслуживание, безопасность, сети и поддержка.',
         services: 'Услуги', company: 'Компания', contact: 'Контакты',
@@ -115,7 +115,7 @@ export default defineI18nConfig(() => ({
       },
     },
     en: {
-      nav: { services: 'Services', booking: 'Book' },
+      nav: { home: 'Home', services: 'Services', booking: 'Book' },
       footer: {
         tagline: 'IT services for businesses in Chișinău: maintenance, security, networking and support.',
         services: 'Services', company: 'Company', contact: 'Contact',

@@ -24,6 +24,9 @@ export default defineNuxtConfig({
     defaultLocale: 'ro',
     strategy: 'prefix_except_default',
     detectBrowserLanguage: false,
+    bundle: {
+      fullInstall: false,
+    },
   },
 
   colorMode: {
@@ -72,9 +75,6 @@ export default defineNuxtConfig({
           crossorigin: '',
           href: '/fonts/inter-variable-latin.woff2',
         },
-        // Preconnect to Unsplash CDN for hero image — eliminates DNS + TCP + TLS from LCP critical path
-        { rel: 'preconnect', href: 'https://images.unsplash.com' },
-        { rel: 'dns-prefetch', href: 'https://images.unsplash.com' },
       ],
       meta: [
         { name: 'theme-color', media: '(prefers-color-scheme: light)', content: '#F8F9FA' },
@@ -143,6 +143,14 @@ export default defineNuxtConfig({
     '/admin/**': { prerender: false },
     '/ru/admin/**': { prerender: false },
     '/en/admin/**': { prerender: false },
+  },
+
+  experimental: {
+    defaults: {
+      nuxtLink: {
+        prefetch: false,
+      },
+    },
   },
 
   typescript: {
