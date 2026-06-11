@@ -2,6 +2,13 @@ import type { H3Event } from 'h3'
 
 type Json = Record<string, unknown>
 
+// Cache hierarchy:
+//   Request → Edge Cache (Cache-Control headers)
+//          → Worker Memory (kvCache.ts, 10s TTL Map)
+//          → KV (CACHE binding, 60s TTL for list snapshots)
+//          → D1 (DB binding, source of truth for bookings/leads)
+// Attachments bypass KV/D1 and go directly to R2 (MEDIA binding).
+
 function getKV(event: H3Event): KVNamespace | null {
   const env = (event.context as { cloudflare?: { env?: { CACHE?: KVNamespace } } })?.cloudflare?.env
   if (env?.CACHE) return env.CACHE
@@ -10,6 +17,32 @@ function getKV(event: H3Event): KVNamespace | null {
 
 // Dev fallback: Nitro filesystem-backed storage (configured via nitro.devStorage)
 const store = () => useStorage('cache')
+
+// KV list-cache helpers — used as the KV layer in front of D1 for booking/lead lists.
+// Key convention: "booking:__list__" / "lead:__list__"
+// TTL 60s on Cloudflare KV; dev fallback has no TTL (invalidated explicitly).
+const KV_LIST_TTL = 60 // seconds
+
+export async function kvListCacheGet<T>(event: H3Event, key: string): Promise<T[] | null> {
+  const kv = getKV(event)
+  if (kv) return ((await kv.get(key, 'json')) as T[] | null) ?? null
+  return await store().getItem<T[]>(key)
+}
+
+export async function kvListCacheSet<T>(event: H3Event, key: string, data: T[]): Promise<void> {
+  const kv = getKV(event)
+  if (kv) {
+    await kv.put(key, JSON.stringify(data), { expirationTtl: KV_LIST_TTL })
+    return
+  }
+  await store().setItem(key, data)
+}
+
+export async function kvListCacheDelete(event: H3Event, key: string): Promise<void> {
+  const kv = getKV(event)
+  if (kv) { await kv.delete(key); return }
+  await store().removeItem(key)
+}
 
 export async function kvList(event: H3Event, prefix: string): Promise<Json[]> {
   const kv = getKV(event)
@@ -61,7 +94,7 @@ export function newId(prefix: string): string {
 // Minimal KVNamespace shape from Cloudflare Workers types (avoids importing the full package on server stub)
 interface KVNamespace {
   get(key: string, type?: 'text' | 'json' | 'arrayBuffer' | 'stream'): Promise<unknown>
-  put(key: string, value: string | ArrayBuffer | ReadableStream): Promise<void>
+  put(key: string, value: string | ArrayBuffer | ReadableStream, options?: { expirationTtl?: number }): Promise<void>
   delete(key: string): Promise<void>
   list(opts?: { prefix?: string; limit?: number; cursor?: string }): Promise<{
     keys: { name: string; expiration?: number; metadata?: unknown }[]

@@ -7,16 +7,17 @@ pages_build_output_dir = "dist"
 SITE_URL = "https://kostech.md"
 NUXT_PUBLIC_SITE_URL = "https://kostech.md"
 
-# Uncomment after running scripts/cf-bootstrap.sh to populate IDs:
-# [[d1_databases]]
-# binding = "DB"
-# database_name = "kostech-web"
-# database_id = "REPLACE_ME"
+# Run: wrangler d1 create kostech-web  → paste database_id below
+[[d1_databases]]
+binding = "DB"
+database_name = "kostech-web"
+database_id = "REPLACE_ME"
 
 [[kv_namespaces]]
 binding = "CACHE"
 id = "8763361cb5bb4cd092ad882e5502a062"
 
-# [[r2_buckets]]
-# binding = "MEDIA"
-# bucket_name = "kostech-web-media"
+# Run: wrangler r2 bucket create kostech-web-media  → no ID needed, just bucket_name
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "kostech-web-media"
