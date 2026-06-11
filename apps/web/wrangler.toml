@@ -11,7 +11,7 @@ NUXT_PUBLIC_SITE_URL = "https://kostech.md"
 [[d1_databases]]
 binding = "DB"
 database_name = "kostech-web"
-database_id = "REPLACE_ME"
+database_id = "0ae67cd3-7f5a-469e-9ea2-8c3d5804824f"
 
 [[kv_namespaces]]
 binding = "CACHE"
