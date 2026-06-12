@@ -12,15 +12,18 @@ const { data: services } = await useFetch('/api/content/services', {
   default: () => [],
 })
 
+const SITE_DESCRIPTION = 'Servicii IT, mentenanță PC și laptop, administrare servere și rețele în Chișinău, Moldova.'
+
 useSeoMeta({
-  title: computed(() => content.value?.seo?.title ?? 'Kostech'),
-  description: computed(() => content.value?.seo?.description ?? ''),
-  ogTitle: computed(() => content.value?.seo?.title ?? 'Kostech'),
-  ogDescription: computed(() => content.value?.seo?.description ?? ''),
+  title: computed(() => content.value?.seo?.title ?? 'Kostech — Servicii IT în Chișinău'),
+  description: computed(() => content.value?.seo?.description || SITE_DESCRIPTION),
+  ogTitle: computed(() => content.value?.seo?.title ?? 'Kostech — Servicii IT în Chișinău'),
+  ogDescription: computed(() => content.value?.seo?.description || SITE_DESCRIPTION),
   ogType: 'website',
-  ogImage: '/og/home.png',
+  ogUrl: 'https://kostech.md',
+  ogImage: 'https://kostech.md/og/home.png',
   twitterCard: 'summary_large_image',
-  twitterImage: '/og/home.png',
+  twitterImage: 'https://kostech.md/og/home.png',
 })
 
 const localePath = useLocalePath()

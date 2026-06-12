@@ -30,9 +30,9 @@ useSeoMeta({
   description: computed(() => service.value?.summary ?? ''),
   ogTitle: computed(() => service.value?.title),
   ogDescription: computed(() => service.value?.summary),
-  ogImage: computed(() => service.value ? `/og/${service.value.slug}.png` : undefined),
+  ogImage: computed(() => service.value ? `https://kostech.md/og/${service.value.slug}.png` : undefined),
   twitterCard: 'summary_large_image',
-  twitterImage: computed(() => service.value ? `/og/${service.value.slug}.png` : undefined),
+  twitterImage: computed(() => service.value ? `https://kostech.md/og/${service.value.slug}.png` : undefined),
 })
 
 useHead(() => ({

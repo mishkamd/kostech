@@ -16,6 +16,7 @@ export default defineNuxtConfig({
   ],
 
   i18n: {
+    baseUrl: 'https://kostech.md',
     locales: [
       { code: 'ro', language: 'ro-MD', name: 'Română' },
       { code: 'ru', language: 'ru-RU', name: 'Русский' },
@@ -59,22 +60,14 @@ export default defineNuxtConfig({
   },
 
   robots: {
-    disallow: ['/admin'],
+    disallow: ['/admin', '/api/'],
   },
 
   app: {
     head: {
-      htmlAttrs: { lang: 'ro' },
       viewport: 'width=device-width,initial-scale=1,viewport-fit=cover',
       link: [
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
-        {
-          rel: 'preload',
-          as: 'font',
-          type: 'font/woff2',
-          crossorigin: '',
-          href: '/fonts/inter-variable-latin.woff2',
-        },
       ],
       meta: [
         { name: 'theme-color', media: '(prefers-color-scheme: light)', content: '#F8F9FA' },
@@ -146,6 +139,8 @@ export default defineNuxtConfig({
   },
 
   experimental: {
+    inlineSSRStyles: true,
+    payloadExtraction: false,
     defaults: {
       nuxtLink: {
         prefetch: false,

@@ -39,9 +39,9 @@ useSeoMeta({
   description: computed(() => seoForLocale.value.description),
   ogTitle: computed(() => seoForLocale.value.title),
   ogDescription: computed(() => seoForLocale.value.description),
-  ogImage: '/og/servicii.png',
+  ogImage: 'https://kostech.md/og/servicii.png',
   twitterCard: 'summary_large_image',
-  twitterImage: '/og/servicii.png',
+  twitterImage: 'https://kostech.md/og/servicii.png',
 })
 </script>
 

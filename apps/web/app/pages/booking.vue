@@ -8,26 +8,23 @@ const { data: services } = await useFetch('/api/content/services', {
   default: () => [],
 })
 
+const bookingMeta = computed(() => {
+  const map = {
+    ro: { title: 'Programare — Kostech', description: 'Programează o intervenție IT în 4 pași simpli. Diagnoză gratuită.' },
+    ru: { title: 'Запись — Kostech', description: 'Запишитесь на IT-обслуживание за 4 простых шага. Бесплатная диагностика.' },
+    en: { title: 'Book — Kostech', description: 'Book an IT service in 4 simple steps. Free diagnosis.' },
+  }
+  return map[locale.value as 'ro' | 'ru' | 'en'] ?? map.ro
+})
+
 useSeoMeta({
-  title: computed(() => {
-    const map = {
-      ro: { title: 'Programare — Kostech', description: 'Programează o intervenție IT în 4 pași simpli. Diagnoză gratuită.' },
-      ru: { title: 'Запись — Kostech', description: 'Запишитесь на IT-обслуживание за 4 простых шага. Бесплатная диагностика.' },
-      en: { title: 'Book — Kostech', description: 'Book an IT service in 4 simple steps. Free diagnosis.' },
-    }
-    return map[locale.value as 'ro' | 'ru' | 'en']?.title ?? map.ro.title
-  }),
-  description: computed(() => {
-    const map = {
-      ro: { description: 'Programează o intervenție IT în 4 pași simpli. Diagnoză gratuită.' },
-      ru: { description: 'Запишитесь на IT-обслуживание за 4 простых шага. Бесплатная диагностика.' },
-      en: { description: 'Book an IT service in 4 simple steps. Free diagnosis.' },
-    }
-    return map[locale.value as 'ro' | 'ru' | 'en']?.description ?? map.ro.description
-  }),
-  ogImage: '/og/booking.png',
+  title: computed(() => bookingMeta.value.title),
+  description: computed(() => bookingMeta.value.description),
+  ogTitle: computed(() => bookingMeta.value.title),
+  ogDescription: computed(() => bookingMeta.value.description),
+  ogImage: 'https://kostech.md/og/booking.png',
   twitterCard: 'summary_large_image',
-  twitterImage: '/og/booking.png',
+  twitterImage: 'https://kostech.md/og/booking.png',
 })
 
 const step = ref(1)
